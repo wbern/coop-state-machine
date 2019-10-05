@@ -1,37 +1,38 @@
 <template>
-    <div class="grid">
-        <div v-for="(undefined, gridY) in rows * 2" :key="gridY" class="grid-row">
+    <div id="city" class="grid">
+        <br />
+        <div v-for="(undefined, gridY) in rows" :key="gridY" class="grid-row">
             <div
                 v-for="(undefined, gridX) in columns * 2"
                 :key="gridX"
+                :x="gridX"
+                :y="gridY"
                 class="grid-block"
                 :class="{
                     'grid-block--valid-floor-space': validFloorSpace(gridX, gridY),
                     'grid-block--valid-stack-space': validStackSpace(gridX, gridY),
                     'grid-block--floor-space-in-use': validFloorSpace(gridX, gridY) && floorSpaceInUse(gridToCoords(gridX, gridY)),
-                    'grid-block--stack-space-in-use': validStackSpace(gridX, gridY) && stackSpaceInUse(gridX, gridY)
+                    'grid-block--stack-space-in-use': validStackSpace(gridX, gridY) && stackSpaceInUse(gridX, gridY),
                 }"
             >
-                <div
-                    v-if="validFloorSpace(gridX, gridY) && floorSpaceInUse(gridToCoords(gridX, gridY))"
-                    :style="'opacity: 1; z-index: ' + getFloorSpaceZ(gridX, gridY) + ';'"
-                >
-                    <!-- <img class="grid-image" :src="getCoordsData(gridToCoords(gridX, gridY)).type" /> -->
-                </div>
-                <div
-                    v-if="validStackSpace(gridX, gridY) && stackSpaceInUse(gridX, gridY)"
-                    :style="'opacity: 1; z-index: ' + getStackSpaceZ(gridX, gridY) + ';'"
-                >
-                    <!-- <img class="grid-image" :src="findStackSpaceCoords(gridX, gridY).type" /> -->
-                </div>
+                <building type="stack" :source="findStackSpaceCoords(gridX, gridY)" :showImages="showImages" />
+                <building
+                    v-if="validFloorSpace(gridX, gridY)"
+                    type="floor"
+                    :source="getCoordsData(gridToCoords(gridX, gridY))"
+                    :showImages="showImages"
+                />
             </div>
         </div>
     </div>
 </template>
 
 <script>
+import Building from './components/Building'
+
 export default {
-    name: 'HelloWorld',
+    name: 'City',
+    components: { 'building': Building },
     methods: {
         getTileNumber(i) {
             // '/buildings/buildingTiles_' + getTileNumber(y * x) + '.png'
@@ -40,30 +41,21 @@ export default {
             // return y.toString().padStart(3, '0')
         },
         gridToCoords(gridX, gridY) {
-            if (gridX === 1 && gridY === 1) {
-                debugger
-            }
-
             if (!this.validFloorSpace(gridX, gridY)) {
                 throw new Error(
                     'cannot convert to coords with uneven grid coords'
                 )
             }
 
-            // return {
-            //     x: gridX / 2,
-            //     y: gridY / 2,
-            // }
-
-            let offset = 0
+            let xOffset = 0
 
             if (this.isOddSpace(gridX, gridY)) {
-                offset = 1
+                xOffset = 1
             }
 
             const res = {
-                x: gridX / 2,
-                y: (gridY - offset) / 2,
+                x: (gridX - xOffset) / 2,
+                y: gridY,
             }
 
             return res
@@ -80,7 +72,7 @@ export default {
             )
         },
         validStackSpace(gridX, gridY) {
-            // anywhere is valid stack space
+            // anywhere is valid stack space..
             return true
             // return (
             //     !this.isEvenSpace(gridX, gridY) &&
@@ -91,18 +83,21 @@ export default {
             return !!this.getCoordsData(coords)
         },
         stackSpaceInUse(gridX, gridY) {
-            return this.findStackSpaceCoords(gridX, gridY)
+            return !!this.findStackSpaceCoords(gridX, gridY)
         },
         findStackSpaceCoords(startingGridX, startingGridY) {
+            let lastOneFound
+
             for (let i = startingGridY + 1; i < this.rows * 2; i++) {
                 if (this.validFloorSpace(startingGridX, i)) {
                     let coords = this.gridToCoords(startingGridX, i)
 
-                    let res = this.getCoordsData({
+                    let searchCoords = {
                         x: coords.x,
                         y: coords.y,
                         z: i - startingGridY,
-                    })
+                    }
+                    let res = this.getCoordsData(searchCoords)
 
                     if (
                         // * are there any floors this many rows to the right?
@@ -110,50 +105,83 @@ export default {
                         // * does the floor have high enough elevation?
                         res
                     ) {
-                        return res
+                        lastOneFound = res;
                     }
                 }
             }
+
+            return lastOneFound
         },
         getCoordsData(coords) {
-            return (
+            let value =
                 this.coordsData[coords.x] &&
                 this.coordsData[coords.x][coords.y] &&
                 this.coordsData[coords.x][coords.y][coords.z || 0]
-            )
+
+            if (value) {
+                return {
+                    x: coords.x,
+                    y: coords.y,
+                    z: coords.z || 0,
+                    value,
+                }
+            }
+            return undefined
         },
         getFloorSpaceZ(x, y) {
             return y
         },
-        getStackSpaceZ(x, y) {
-            return y + 2
+        getStackSpaceZ(gridX, gridY) {
+            let stackSource = this.findStackSpaceCoords(gridX, gridY)
+
+            return stackSource.y + stackSource.z
+        },
+        clearCoordsData() {
+            this.coordsData = this.getEmptyCoordsData()
+        },
+        getEmptyCoordsData() {
+            return new Array(this.columns).fill(1).map(y =>
+                // x
+                new Array(this.rows).fill(1).map(x =>
+                    // z (floors)
+                    new Array(this.initialFloors).fill(1).map(z => ({
+                        type: 'buildings/buildingTiles_000.png',
+                    }))
+                )
+            )
+        },
+        getRandomizedCoordsData() {
+            return new Array(this.columns).fill(1).map(y =>
+                // x
+                new Array(this.rows).fill(1).map(x =>
+                    // z (floors)
+                    new Array(Math.max(Math.floor(Math.random() * 10) - 7, 0))
+                        .fill(1)
+                        .map(z => ({
+                            type: 'buildings/buildingTiles_000.png',
+                        }))
+                )
+            )
+        },
+        init() {
+            this.coordsData = this.randomizeBuildings
+                ? this.getRandomizedCoordsData()
+                : this.getEmptyCoordsData()
         },
     },
+    created() {
+        this.init()
+    },
     data() {
-        // y
-        let coordsData = new Array(this.columns).fill(1).map(y =>
-            // x
-            new Array(this.rows).fill(1).map(x =>
-                // z (floors)
-                new Array(this.initialFloors).fill(1).map(z => ({
-                    type: 'buildings/buildingTiles_000.png',
-                }))
-            )
-        )
-
-        coordsData[1][0] = new Array(3).fill({
-            type: 'buildings/buildingTiles_000.png',
-        })
-
         return {
-            coordsData,
+            coordsData: undefined,
         }
     },
     computed: {},
     props: {
         rows: {
             type: Number,
-            default: () => 6,
+            default: () => 12,
         },
         columns: {
             type: Number,
@@ -163,12 +191,43 @@ export default {
             type: Number,
             default: () => 0,
         },
+        showImages: {
+            type: Boolean,
+            default: () => true,
+        },
+        randomizeBuildings: {
+            type: Boolean,
+            default: () => false,
+        },
+    },
+    watch: {
+        rows() {
+            this.init()
+        },
+        columns() {
+            this.init()
+        },
+        initialFloors() {
+            this.init()
+        },
+        randomizeBuildings() {
+            this.init()
+        },
     },
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+#city {
+    font-family: 'Avenir', Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-align: center;
+    color: #2c3e50;
+    margin-top: 60px;
+}
+
 .grid {
     border: 1px dotted black;
     /* height: 400px; */
@@ -185,19 +244,19 @@ export default {
 }
 .grid-block {
     box-sizing: border-box;
-    border: 1px solid rgba(0, 100, 255, 0.5);
+    /* border: 1px solid rgba(0, 100, 255, 0.5); */
     flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
     max-width: 16px;
-    height: 8px;
+    height: 9px;
     /* for stacking buildings */
     /* height: 10px; */
 }
-.grid-block--valid-stack-space {
+/* .grid-block--valid-stack-space {
     background: rgba(189, 66, 255, 0.1);
-}
+} */
 .grid-block--valid-floor-space {
     background: rgba(0, 255, 50, 0.1);
 }

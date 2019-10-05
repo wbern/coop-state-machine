@@ -1,8 +1,8 @@
 import Vue from 'vue'
-import App from './App.vue'
+import City from './City.vue'
 
 Vue.config.productionTip = false
 
 new Vue({
-  render: h => h(App),
-}).$mount('#app')
+  render: h => h(City),
+}).$mount('#city')

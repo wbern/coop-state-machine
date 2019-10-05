@@ -1,17 +1,54 @@
-import { linkTo } from "@storybook/addon-links";
+import { withKnobs, number, boolean } from '@storybook/addon-knobs'
+import { storiesOf, addDecorator } from '@storybook/vue'
+import { linkTo } from '@storybook/addon-links'
 
-import HelloWorld from "../src/components/HelloWorld";
+import City from '../src/City'
 
 export default {
-  title: "HelloWorld"
-};
+    title: 'City',
+}
+
+addDecorator(withKnobs)
 
 export const toStorybook = () => ({
-  components: { HelloWorld },
-  template: '<HelloWorld :showApp="action" />',
-  methods: { action: linkTo("Button") }
-});
+    props: {
+        rows: {
+            type: Number,
+            default: () => number('rows', 12),
+        },
+        columns: {
+            type: Number,
+            default: () => number('columns', 6),
+        },
+        initialFloors: {
+            type: Number,
+            default: () => number('initialFloors', 1),
+        },
+        showImages: {
+            type: Number,
+            default: () => boolean('showImages', true),
+        },
+        randomizeBuildings: {
+            type: Number,
+            default: () => boolean('randomizeBuildings', true),
+        },
+    },
+    mounted() {
+        // let caughtProps = JSON.stringify(this.$props)
+        // setInterval(function() {
+        //     let newJson = JSON.stringify(this.$props)
+        //     if (newJson !== caughtProps) {
+        //         debugger;
+        //         this.$forceUpdate()
+        //     }
+        //     caughtProps = JSON.stringify(this.$props)
+        // }.bind(this), 100)
+    },
+    components: { City },
+    template: '<City v-bind="$props" />',
+    methods: { action: linkTo('Button') },
+})
 
 toStorybook.story = {
-  name: "to Storybook"
-};
+    name: 'to Storybook',
+}
