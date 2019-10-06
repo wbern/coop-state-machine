@@ -1,8 +1,10 @@
+// eslint-disable vue/no-use-v-if-with-v-for
 <template>
     <div id="city" class="grid">
         <div v-for="(column, gridX) in coordsData" :key="gridX" class="grid-column">
             <div
-                v-for="(cell, gridY) in column"
+                v-for="(cell, gridY) in coordsData[gridX]"
+                v-if="cell"
                 :key="gridY"
                 :x="gridX"
                 :y="gridY"
@@ -14,17 +16,19 @@
                     'grid-block--stack-space-in-use': stackSpaceInUse(gridX, gridY),
                 }"
             >
-                <building-block
-                    type="stack"
-                    :source="findStackSpaceCoords(gridX, gridY)"
-                    :showImages="showImages"
-                />
-                <building-block
-                    v-if="validFloorSpace(gridX, gridY)"
-                    type="floor"
-                    :source="getCoordsData(gridToCoords(gridX, gridY))"
-                    :showImages="showImages"
-                />
+                <div v-if="cell">
+                    <building-block
+                        type="stack"
+                        :source="findStackSpaceCoords(gridX, gridY)"
+                        :showImages="showImages"
+                    />
+                    <building-block
+                        v-if="validFloorSpace(gridX, gridY)"
+                        type="floor"
+                        :source="getCoordsData(gridToCoords(gridX, gridY))"
+                        :showImages="showImages"
+                    />
+                </div>
             </div>
         </div>
     </div>
@@ -83,7 +87,7 @@ export default {
         findStackSpaceCoords(startingGridX, startingGridY) {
             let lastOneFound
 
-            for (let i = startingGridY + 1; i < this.size; i++) {
+            for (let i = startingGridY + 1; i < this.sizeY; i++) {
                 if (this.validFloorSpace(startingGridX, i)) {
                     let coords = this.gridToCoords(startingGridX, i)
 
@@ -135,28 +139,36 @@ export default {
             this.coordsData = this.getEmptyCoordsData()
         },
         getEmptyCoordsData() {
-            return new Array(this.size).fill(1).map(y =>
-                // x
-                new Array(this.size).fill(1).map(x =>
-                    // z (floors)
-                    new Array(this.initialFloors).fill(1).map(z => ({
-                        type: 'buildings/buildingTiles_000.png',
-                    }))
+            return new Array(this.maxSizeX + this.sizeX)
+                .fill(1, this.maxSizeX, this.maxSizeX + this.sizeX)
+                .map(x =>
+                    new Array(this.maxSizeY + this.sizeY)
+                        .fill(1, this.maxSizeY, this.maxSizeY + this.sizeY)
+                        .map(y =>
+                            // z (floors)
+                            new Array(this.initialFloors).fill(1).map(z => ({
+                                type: 'buildings/buildingTiles_000.png',
+                            }))
+                        )
                 )
-            )
         },
         getRandomizedCoordsData() {
-            return new Array(this.size).fill(1).map(y =>
-                // x
-                new Array(this.size).fill(1).map(x =>
-                    // z (floors)
-                    new Array(Math.max(Math.floor(Math.random() * 10) - 7, 0))
-                        .fill(1)
-                        .map(z => ({
-                            type: 'buildings/buildingTiles_000.png',
-                        }))
+            return new Array(this.maxSizeX + this.sizeX)
+                .fill(1, this.maxSizeX, this.maxSizeX + this.sizeX)
+                .map(x =>
+                    new Array(this.maxSizeY + this.sizeY)
+                        .fill(1, this.maxSizeY, this.sizeY)
+                        .map(y =>
+                            // z (floors)
+                            new Array(
+                                Math.max(Math.floor(Math.random() * 10) - 7, 0)
+                            )
+                                .fill(1)
+                                .map(z => ({
+                                    type: 'buildings/buildingTiles_000.png',
+                                }))
+                        )
                 )
-            )
         },
         init() {
             this.coordsData = this.randomizeBuildings
@@ -174,17 +186,21 @@ export default {
     },
     computed: {},
     props: {
-        // rows: {
-        //     type: Number,
-        //     default: () => 12,
-        // },
-        // columns: {
-        //     type: Number,
-        //     default: () => 6,
-        // },
-        size: {
+        sizeX: {
             type: Number,
-            default: () => 10,
+            default: () => 6,
+        },
+        sizeY: {
+            type: Number,
+            default: () => 3,
+        },
+        maxSizeX: {
+            type: Number,
+            default: () => 12,
+        },
+        maxSizeY: {
+            type: Number,
+            default: () => 12,
         },
         initialFloors: {
             type: Number,
@@ -200,7 +216,16 @@ export default {
         },
     },
     watch: {
-        size() {
+        sizeX() {
+            this.init()
+        },
+        sizeY() {
+            this.init()
+        },
+        maxSizeX() {
+            this.init()
+        },
+        maxSizeY() {
             this.init()
         },
         initialFloors() {
@@ -209,6 +234,9 @@ export default {
         randomizeBuildings() {
             this.init()
         },
+    },
+    mounted() {
+        window.coordsData = this.coordsData
     },
 }
 </script>
