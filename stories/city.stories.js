@@ -12,13 +12,9 @@ addDecorator(withKnobs)
 
 export const toStorybook = () => ({
     props: {
-        rows: {
+        size: {
             type: Number,
-            default: () => number('rows', 12),
-        },
-        columns: {
-            type: Number,
-            default: () => number('columns', 6),
+            default: () => number('size', 10),
         },
         initialFloors: {
             type: Number,

@@ -1,22 +1,25 @@
 <template>
     <div id="city" class="grid">
-        <br />
-        <div v-for="(undefined, gridY) in rows" :key="gridY" class="grid-row">
+        <div v-for="(column, gridX) in coordsData" :key="gridX" class="grid-column">
             <div
-                v-for="(undefined, gridX) in columns * 2"
-                :key="gridX"
+                v-for="(cell, gridY) in column"
+                :key="gridY"
                 :x="gridX"
                 :y="gridY"
                 class="grid-block"
                 :class="{
                     'grid-block--valid-floor-space': validFloorSpace(gridX, gridY),
-                    'grid-block--valid-stack-space': validStackSpace(gridX, gridY),
+                    'grid-block--valid-stack-space': true,
                     'grid-block--floor-space-in-use': validFloorSpace(gridX, gridY) && floorSpaceInUse(gridToCoords(gridX, gridY)),
-                    'grid-block--stack-space-in-use': validStackSpace(gridX, gridY) && stackSpaceInUse(gridX, gridY),
+                    'grid-block--stack-space-in-use': stackSpaceInUse(gridX, gridY),
                 }"
             >
-                <building type="stack" :source="findStackSpaceCoords(gridX, gridY)" :showImages="showImages" />
-                <building
+                <building-block
+                    type="stack"
+                    :source="findStackSpaceCoords(gridX, gridY)"
+                    :showImages="showImages"
+                />
+                <building-block
                     v-if="validFloorSpace(gridX, gridY)"
                     type="floor"
                     :source="getCoordsData(gridToCoords(gridX, gridY))"
@@ -28,11 +31,11 @@
 </template>
 
 <script>
-import Building from './components/Building'
+import BuildingBlock from './components/BuildingBlock'
 
 export default {
     name: 'City',
-    components: { 'building': Building },
+    components: { 'building-block': BuildingBlock },
     methods: {
         getTileNumber(i) {
             // '/buildings/buildingTiles_' + getTileNumber(y * x) + '.png'
@@ -71,14 +74,6 @@ export default {
                 this.isEvenSpace(gridX, gridY) || this.isOddSpace(gridX, gridY)
             )
         },
-        validStackSpace(gridX, gridY) {
-            // anywhere is valid stack space..
-            return true
-            // return (
-            //     !this.isEvenSpace(gridX, gridY) &&
-            //     !this.isOddSpace(gridX, gridY)
-            // )
-        },
         floorSpaceInUse(coords) {
             return !!this.getCoordsData(coords)
         },
@@ -88,7 +83,7 @@ export default {
         findStackSpaceCoords(startingGridX, startingGridY) {
             let lastOneFound
 
-            for (let i = startingGridY + 1; i < this.rows * 2; i++) {
+            for (let i = startingGridY + 1; i < this.size; i++) {
                 if (this.validFloorSpace(startingGridX, i)) {
                     let coords = this.gridToCoords(startingGridX, i)
 
@@ -105,7 +100,7 @@ export default {
                         // * does the floor have high enough elevation?
                         res
                     ) {
-                        lastOneFound = res;
+                        lastOneFound = res
                     }
                 }
             }
@@ -140,9 +135,9 @@ export default {
             this.coordsData = this.getEmptyCoordsData()
         },
         getEmptyCoordsData() {
-            return new Array(this.columns).fill(1).map(y =>
+            return new Array(this.size).fill(1).map(y =>
                 // x
-                new Array(this.rows).fill(1).map(x =>
+                new Array(this.size).fill(1).map(x =>
                     // z (floors)
                     new Array(this.initialFloors).fill(1).map(z => ({
                         type: 'buildings/buildingTiles_000.png',
@@ -151,9 +146,9 @@ export default {
             )
         },
         getRandomizedCoordsData() {
-            return new Array(this.columns).fill(1).map(y =>
+            return new Array(this.size).fill(1).map(y =>
                 // x
-                new Array(this.rows).fill(1).map(x =>
+                new Array(this.size).fill(1).map(x =>
                     // z (floors)
                     new Array(Math.max(Math.floor(Math.random() * 10) - 7, 0))
                         .fill(1)
@@ -179,13 +174,17 @@ export default {
     },
     computed: {},
     props: {
-        rows: {
+        // rows: {
+        //     type: Number,
+        //     default: () => 12,
+        // },
+        // columns: {
+        //     type: Number,
+        //     default: () => 6,
+        // },
+        size: {
             type: Number,
-            default: () => 12,
-        },
-        columns: {
-            type: Number,
-            default: () => 6,
+            default: () => 10,
         },
         initialFloors: {
             type: Number,
@@ -197,14 +196,11 @@ export default {
         },
         randomizeBuildings: {
             type: Boolean,
-            default: () => false,
+            default: () => true,
         },
     },
     watch: {
-        rows() {
-            this.init()
-        },
-        columns() {
+        size() {
             this.init()
         },
         initialFloors() {
@@ -225,22 +221,22 @@ export default {
     -moz-osx-font-smoothing: grayscale;
     text-align: center;
     color: #2c3e50;
-    margin-top: 60px;
 }
 
 .grid {
     border: 1px dotted black;
-    /* height: 400px; */
     width: 100%;
     display: flex;
-    align-items: center;
-    flex-direction: column;
-    /* justify-content: space-between; */
+    flex-direction: row;
+    justify-content: center;
 }
-.grid-row {
+.grid-column {
     display: flex;
-    width: 100%;
-    flex: 1;
+    /* width: 100%;
+    height: 100%; */
+    /* flex: 1; */
+    flex-direction: column;
+    justify-content: center;
 }
 .grid-block {
     box-sizing: border-box;
@@ -249,8 +245,11 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center;
-    max-width: 16px;
-    height: 9px;
+    width: 8vh;
+    height: 4.6vh;
+    max-height: 4.6vh;
+    /* max-width: 16px; */
+    /* height: 9px; */
     /* for stacking buildings */
     /* height: 10px; */
 }

@@ -143,9 +143,9 @@ describe('find spaces in use', () => {
             wrapper.vm.coordsData[0][6] = new Array(7).fill({ type: 'hello' })
             wrapper.vm.$forceUpdate()
 
-            let lower = wrapper.find('[x="0"][y="4"] > div')
-            let higher = wrapper.find('[x="0"][y="3"] > div')
-            let highest = wrapper.find('[x="0"][y="0"] > div')
+            let lower = wrapper.find('[x="0"][y="4"] > div > img')
+            let higher = wrapper.find('[x="0"][y="3"] > div > img')
+            let highest = wrapper.find('[x="0"][y="0"] > div > img')
 
             expect(lower).not.toBe(null)
             expect(higher).not.toBe(null)

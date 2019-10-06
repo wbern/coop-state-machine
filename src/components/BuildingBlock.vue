@@ -39,8 +39,11 @@ export default {
   width: 4rem; */
     /* position: absolute; */
     /* visibility: hidden; */
-    width: 32px;
-    height: 32px;
+    width: 16vh;
+    height: 16vh;
+    /* width: 100%;
+    height: 100%;
+    object-fit: cover; */
 }
 /* .grid-block--valid-stack-space {
     background: rgba(189, 66, 255, 0.1);
@@ -53,5 +56,6 @@ export default {
 }
 .building-type-stack {
     /* background: rgba(200, 50, 255, 1); */
+    margin-bottom: 3.2vh;
 }
 </style>
