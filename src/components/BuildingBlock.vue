@@ -39,8 +39,10 @@ export default {
   width: 4rem; */
     /* position: absolute; */
     /* visibility: hidden; */
-    width: 32px;
-    height: 32px;
+    width: 12vh;
+    height: 12vh;
+    /* width: 32px;
+    height: 32px; */
 }
 /* .grid-block--valid-stack-space {
     background: rgba(189, 66, 255, 0.1);
@@ -51,7 +53,8 @@ export default {
 .building-type-floor {
     /* background: rgba(0, 255, 50, 1); */
 }
-.building-type-stack {
+.building-type-stack > img {
     /* background: rgba(200, 50, 255, 1); */
+    margin-bottom: 2.9vh;
 }
 </style>

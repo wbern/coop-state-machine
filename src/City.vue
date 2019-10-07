@@ -1,38 +1,44 @@
 <template>
-    <div id="city" class="grid">
-        <br />
-        <div v-for="(undefined, gridY) in rows" :key="gridY" class="grid-row">
-            <div
-                v-for="(undefined, gridX) in columns * 2"
-                :key="gridX"
-                :x="gridX"
-                :y="gridY"
-                class="grid-block"
-                :class="{
+    <div id="city" class="city">
+        <div class="grid">
+            <div v-for="(undefined, gridY) in rows" :key="gridY" class="grid-row">
+                <div
+                    v-for="(undefined, gridX) in columns * 2"
+                    :key="gridX"
+                    :x="gridX"
+                    :y="gridY"
+                    class="grid-block"
+                    :class="{
                     'grid-block--valid-floor-space': validFloorSpace(gridX, gridY),
-                    'grid-block--valid-stack-space': validStackSpace(gridX, gridY),
+                    'grid-block--valid-stack-space': true,
                     'grid-block--floor-space-in-use': validFloorSpace(gridX, gridY) && floorSpaceInUse(gridToCoords(gridX, gridY)),
-                    'grid-block--stack-space-in-use': validStackSpace(gridX, gridY) && stackSpaceInUse(gridX, gridY),
+                    'grid-block--stack-space-in-use': stackSpaceInUse(gridX, gridY),
                 }"
-            >
-                <building type="stack" :source="findStackSpaceCoords(gridX, gridY)" :showImages="showImages" />
-                <building
-                    v-if="validFloorSpace(gridX, gridY)"
-                    type="floor"
-                    :source="getCoordsData(gridToCoords(gridX, gridY))"
-                    :showImages="showImages"
-                />
+                >
+                    <span style="font-size: 6px;">{{ gridX + ' ' + gridY }}</span>
+                    <building-block
+                        type="stack"
+                        :source="findStackSpaceCoords(gridX, gridY)"
+                        :showImages="showImages"
+                    />
+                    <building-block
+                        v-if="validFloorSpace(gridX, gridY)"
+                        type="floor"
+                        :source="getCoordsData(gridToCoords(gridX, gridY))"
+                        :showImages="showImages"
+                    />
+                </div>
             </div>
         </div>
     </div>
 </template>
 
 <script>
-import Building from './components/Building'
+import BuildingBlock from './components/BuildingBlock'
 
 export default {
     name: 'City',
-    components: { 'building': Building },
+    components: { 'building-block': BuildingBlock },
     methods: {
         getTileNumber(i) {
             // '/buildings/buildingTiles_' + getTileNumber(y * x) + '.png'
@@ -71,14 +77,6 @@ export default {
                 this.isEvenSpace(gridX, gridY) || this.isOddSpace(gridX, gridY)
             )
         },
-        validStackSpace(gridX, gridY) {
-            // anywhere is valid stack space..
-            return true
-            // return (
-            //     !this.isEvenSpace(gridX, gridY) &&
-            //     !this.isOddSpace(gridX, gridY)
-            // )
-        },
         floorSpaceInUse(coords) {
             return !!this.getCoordsData(coords)
         },
@@ -105,7 +103,7 @@ export default {
                         // * does the floor have high enough elevation?
                         res
                     ) {
-                        lastOneFound = res;
+                        lastOneFound = res
                     }
                 }
             }
@@ -228,7 +226,7 @@ export default {
     margin-top: 60px;
 }
 
-.grid {
+.city {
     border: 1px dotted black;
     /* height: 400px; */
     width: 100%;
@@ -237,6 +235,7 @@ export default {
     flex-direction: column;
     /* justify-content: space-between; */
 }
+
 .grid-row {
     display: flex;
     width: 100%;
@@ -249,8 +248,13 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center;
-    max-width: 16px;
-    height: 9px;
+    /* height: 4.6vh;
+    max-height: 4.6vh; */
+    width: 5.8vh;
+    max-width: 5.8vh;
+    max-height: 3.39vh;
+    /* max-width: 16px;
+    height: 9px; */
     /* for stacking buildings */
     /* height: 10px; */
 }
