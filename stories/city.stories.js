@@ -12,13 +12,21 @@ addDecorator(withKnobs)
 
 export const toStorybook = () => ({
     props: {
-        rows: {
+        sizeX: {
             type: Number,
-            default: () => number('rows', 12),
+            default: () => number('sizeX', 3),
         },
-        columns: {
+        sizeY: {
             type: Number,
-            default: () => number('columns', 6),
+            default: () => number('sizeY', 3),
+        },
+        maxSizeX: {
+            type: Number,
+            default: () => number('maxSizeX', 5),
+        },
+        maxSizeY: {
+            type: Number,
+            default: () => number('maxSizeY', 5),
         },
         initialFloors: {
             type: Number,
@@ -30,7 +38,7 @@ export const toStorybook = () => ({
         },
         randomizeBuildings: {
             type: Number,
-            default: () => boolean('randomizeBuildings', true),
+            default: () => boolean('randomizeBuildings', false),
         },
     },
     mounted() {

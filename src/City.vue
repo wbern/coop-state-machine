@@ -1,9 +1,9 @@
 <template>
     <div id="city" class="city">
         <div class="grid">
-            <div v-for="(undefined, gridY) in rows" :key="gridY" class="grid-row">
+            <div v-for="(undefined, gridY) in sizeY" :key="gridY" class="grid-row">
                 <div
-                    v-for="(undefined, gridX) in columns * 2"
+                    v-for="(undefined, gridX) in sizeX * 2"
                     :key="gridX"
                     :x="gridX"
                     :y="gridY"
@@ -86,7 +86,7 @@ export default {
         findStackSpaceCoords(startingGridX, startingGridY) {
             let lastOneFound
 
-            for (let i = startingGridY + 1; i < this.rows * 2; i++) {
+            for (let i = startingGridY + 1; i < this.sizeY * 2; i++) {
                 if (this.validFloorSpace(startingGridX, i)) {
                     let coords = this.gridToCoords(startingGridX, i)
 
@@ -98,7 +98,7 @@ export default {
                     let res = this.getCoordsData(searchCoords)
 
                     if (
-                        // * are there any floors this many rows to the right?
+                        // * are there any floors this many sizeY to the right?
                         // * is floor in use?
                         // * does the floor have high enough elevation?
                         res
@@ -138,9 +138,9 @@ export default {
             this.coordsData = this.getEmptyCoordsData()
         },
         getEmptyCoordsData() {
-            return new Array(this.columns).fill(1).map(y =>
+            return new Array(this.sizeX).fill(1).map(y =>
                 // x
-                new Array(this.rows).fill(1).map(x =>
+                new Array(this.sizeY).fill(1).map(x =>
                     // z (floors)
                     new Array(this.initialFloors).fill(1).map(z => ({
                         type: 'buildings/buildingTiles_000.png',
@@ -149,9 +149,9 @@ export default {
             )
         },
         getRandomizedCoordsData() {
-            return new Array(this.columns).fill(1).map(y =>
+            return new Array(this.sizeX).fill(1).map(y =>
                 // x
-                new Array(this.rows).fill(1).map(x =>
+                new Array(this.sizeY).fill(1).map(x =>
                     // z (floors)
                     new Array(Math.max(Math.floor(Math.random() * 10) - 7, 0))
                         .fill(1)
@@ -177,13 +177,21 @@ export default {
     },
     computed: {},
     props: {
-        rows: {
+        sizeX: {
             type: Number,
-            default: () => 12,
+            default: () => 3,
         },
-        columns: {
+        sizeY: {
             type: Number,
-            default: () => 6,
+            default: () => 3,
+        },
+        maxSizeX: {
+            type: Number,
+            default: () => 5,
+        },
+        maxSizeY: {
+            type: Number,
+            default: () => 5,
         },
         initialFloors: {
             type: Number,
@@ -199,10 +207,16 @@ export default {
         },
     },
     watch: {
-        rows() {
+        sizeX() {
             this.init()
         },
-        columns() {
+        sizeY() {
+            this.init()
+        },
+        maxSizeX() {
+            this.init()
+        },
+        maxSizeY() {
             this.init()
         },
         initialFloors() {
