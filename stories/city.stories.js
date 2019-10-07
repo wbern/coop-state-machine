@@ -12,33 +12,33 @@ addDecorator(withKnobs)
 
 export const toStorybook = () => ({
     props: {
-        sizeX: {
-            type: Number,
-            default: () => number('sizeX', 6),
-        },
-        sizeY: {
-            type: Number,
-            default: () => number('sizeY', 3),
-        },
-        maxSizeX: {
-            type: Number,
-            default: () => number('maxSizeX', 12),
-        },
-        maxSizeY: {
-            type: Number,
-            default: () => number('maxSizeY', 12),
-        },
-        initialFloors: {
-            type: Number,
-            default: () => number('initialFloors', 1),
-        },
         showImages: {
             type: Boolean,
-            default: () => boolean('showImages', true),
+            default: () => boolean('showImages', true, 'visuals'),
         },
         randomizeBuildings: {
             type: Boolean,
-            default: () => boolean('randomizeBuildings', false),
+            default: () => boolean('randomizeBuildings', false, 'visuals'),
+        },
+        initialSizeX: {
+            type: Number,
+            default: () => number('initialSizeX', 6, undefined, 'coords'),
+        },
+        initialSizeY: {
+            type: Number,
+            default: () => number('initialSizeY', 3, undefined, 'coords'),
+        },
+        initialFloors: {
+            type: Number,
+            default: () => number('initialFloors', 1, undefined, 'coords'),
+        },
+        maxSizeX: {
+            type: Number,
+            default: () => number('maxSizeX', 12, undefined, 'coords'),
+        },
+        maxSizeY: {
+            type: Number,
+            default: () => number('maxSizeY', 12, undefined, 'coords'),
         },
     },
     mounted() {

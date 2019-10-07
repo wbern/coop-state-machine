@@ -1,31 +1,33 @@
 // eslint-disable vue/no-use-v-if-with-v-for
 <template>
     <div id="city" class="grid">
-        <div v-for="(column, gridX) in coordsData" :key="gridX" class="grid-column">
+        <div v-for="(undefined, screenX) in worldCoords.length" :key="screenX" class="grid-column">
             <div
-                v-for="(cell, gridY) in coordsData[gridX]"
-                v-if="cell"
-                :key="gridY"
-                :x="gridX"
-                :y="gridY"
-                class="grid-block"
-                :class="{
-                    'grid-block--valid-floor-space': validFloorSpace(gridX, gridY),
-                    'grid-block--valid-stack-space': true,
-                    'grid-block--floor-space-in-use': validFloorSpace(gridX, gridY) && floorSpaceInUse(gridToCoords(gridX, gridY)),
-                    'grid-block--stack-space-in-use': stackSpaceInUse(gridX, gridY),
-                }"
+                v-for="(cell, screenY) in (worldCoords[screenToWorldCoords(screenX).x] || []).length"
+                :key="screenY"
+                :data-x="screenX"
+                :data-y="screenY"
             >
-                <div v-if="cell">
+                <div
+                    v-if="findStackSpaceCoords(screenX, screenY) || !validFloorSpace(screenX, screenY) || worldCoords[screenToWorldCoords(screenX, screenY).x][screenToWorldCoords(screenX, screenY).y]"
+                    class="grid-block"
+                    :class="{
+                    'grid-block--valid-floor-space': validFloorSpace(screenX, screenY),
+                    'grid-block--valid-stack-space': true,
+                    'grid-block--floor-space-in-use': validFloorSpace(screenX, screenY) && floorSpaceInUse(screenToWorldCoords(screenX, screenY)),
+                    'grid-block--stack-space-in-use': stackSpaceInUse(screenX, screenY),
+                }"
+                >
+                    <!-- <span style="font-size: 8px;">Hello</span> -->
                     <building-block
                         type="stack"
-                        :source="findStackSpaceCoords(gridX, gridY)"
+                        :source="findStackSpaceCoords(screenX, screenY)"
                         :showImages="showImages"
                     />
                     <building-block
-                        v-if="validFloorSpace(gridX, gridY)"
+                        v-if="validFloorSpace(screenX, screenY)"
                         type="floor"
-                        :source="getCoordsData(gridToCoords(gridX, gridY))"
+                        :source="getWorldCoords(screenToWorldCoords(screenX, screenY))"
                         :showImages="showImages"
                     />
                 </div>
@@ -47,26 +49,78 @@ export default {
             return '000'
             // return y.toString().padStart(3, '0')
         },
-        gridToCoords(gridX, gridY) {
-            if (!this.validFloorSpace(gridX, gridY)) {
+        screenToWorldCoords(screenX, screenY) {
+            if (
+                !this.validFloorSpace(
+                    screenX,
+                    screenY !== undefined ? screenY : screenX
+                )
+            ) {
                 throw new Error(
                     'cannot convert to coords with uneven grid coords'
                 )
             }
 
-            let xOffset = 0
+            // make screenX and screenY equal to the world coords (first that is not "empty")
+            let lowestWorldX = this.worldCoords.findIndex(
+                (val, index, arr) => index in arr
+            )
 
-            if (this.isOddSpace(gridX, gridY)) {
-                xOffset = 1
+            if (isNaN(lowestWorldX)) {
+                throw new Error('there are no created world coordinates')
             }
 
-            const res = {
-                x: (gridX - xOffset) / 2,
-                y: gridY,
-            }
+            let res = {}
+
+            let lowestWorldY = this.worldCoords[lowestWorldX].findIndex(
+                (val, index, arr) => index in arr
+            )
+
+            this.worldCoords.forEach(row =>
+                row.forEach((cell, yIndex) =>
+                    cell.forEach((floor, zIndex) => {
+                        if (cell && lowestWorldY > yIndex - zIndex) {
+                            lowestWorldY = yIndex - zIndex
+                        }
+                    })
+                )
+            )
+
+            res.x =
+                (lowestWorldX +
+                    screenX -
+                    (this.isOddSpace(
+                        lowestWorldX + screenX,
+                        lowestWorldY +
+                            (screenY !== undefined ? screenY : screenX)
+                    )
+                        ? 1
+                        : 0)) /
+                2
+            res.y = lowestWorldY + screenY
 
             return res
         },
+        // gridToCoords(gridX, gridY) {
+        //     if (!this.validFloorSpace(gridX, gridY)) {
+        //         throw new Error(
+        //             'cannot convert to coords with uneven grid coords'
+        //         )
+        //     }
+
+        //     let xOffset = 0
+
+        //     if (this.isOddSpace(gridX, gridY)) {
+        //         xOffset = 1
+        //     }
+
+        //     const res = {
+        //         x: (gridX - xOffset) / 2,
+        //         y: gridY,
+        //     }
+
+        //     return res
+        // },
         isEvenSpace(gridX, gridY) {
             return gridX % 2 === 0 && gridY % 2 === 0
         },
@@ -79,24 +133,24 @@ export default {
             )
         },
         floorSpaceInUse(coords) {
-            return !!this.getCoordsData(coords)
+            return !!this.getWorldCoords(coords)
         },
         stackSpaceInUse(gridX, gridY) {
             return !!this.findStackSpaceCoords(gridX, gridY)
         },
-        findStackSpaceCoords(startingGridX, startingGridY) {
+        findStackSpaceCoords(startingScreenX, startingScreenY) {
             let lastOneFound
 
-            for (let i = startingGridY + 1; i < this.sizeY; i++) {
-                if (this.validFloorSpace(startingGridX, i)) {
-                    let coords = this.gridToCoords(startingGridX, i)
+            for (let i = startingScreenY + 1; i < this.maxSizeY; i++) {
+                if (this.validFloorSpace(startingScreenX, i)) {
+                    let coords = this.screenToWorldCoords(startingScreenX, i)
 
                     let searchCoords = {
                         x: coords.x,
                         y: coords.y,
-                        z: i - startingGridY,
+                        z: i - startingScreenY,
                     }
-                    let res = this.getCoordsData(searchCoords)
+                    let res = this.getWorldCoords(searchCoords)
 
                     if (
                         // * are there any floors this many rows to the right?
@@ -111,11 +165,11 @@ export default {
 
             return lastOneFound
         },
-        getCoordsData(coords) {
+        getWorldCoords(coords) {
             let value =
-                this.coordsData[coords.x] &&
-                this.coordsData[coords.x][coords.y] &&
-                this.coordsData[coords.x][coords.y][coords.z || 0]
+                this.worldCoords[coords.x] &&
+                this.worldCoords[coords.x][coords.y] &&
+                this.worldCoords[coords.x][coords.y][coords.z || 0]
 
             if (value) {
                 return {
@@ -136,28 +190,85 @@ export default {
             return stackSource.y + stackSource.z
         },
         clearCoordsData() {
-            this.coordsData = this.getEmptyCoordsData()
+            this.worldCoords = this.createWorldCoords()
         },
-        getEmptyCoordsData() {
-            return new Array(this.maxSizeX + this.sizeX)
-                .fill(1, this.maxSizeX, this.maxSizeX + this.sizeX)
+        createWorldCoords() {
+            let created = new Array(this.maxSizeX + this.initialSizeX)
+                .fill(1, this.maxSizeX, this.maxSizeX + this.initialSizeX)
                 .map(x =>
-                    new Array(this.maxSizeY + this.sizeY)
-                        .fill(1, this.maxSizeY, this.maxSizeY + this.sizeY)
-                        .map(y =>
-                            // z (floors)
-                            new Array(this.initialFloors).fill(1).map(z => ({
-                                type: 'buildings/buildingTiles_000.png',
-                            }))
+                    new Array(this.maxSizeY + this.initialSizeY)
+                        .fill(
+                            1,
+                            this.maxSizeY,
+                            this.maxSizeY + this.initialSizeY
+                        )
+                        .map(
+                            y =>
+                                // z (floors)
+                                new Array(this.maxSizeZ)
                         )
                 )
+
+            if (this.randomizeBuildings || this.initialFloors > 0) {
+                for (
+                    let xIndex = this.maxSizeX;
+                    xIndex < this.maxSizeX + this.initialSizeX;
+                    xIndex++
+                ) {
+                    for (
+                        let yIndex = this.maxSizeY;
+                        yIndex < this.maxSizeY + this.initialSizeY;
+                        yIndex++
+                    ) {
+                        created[xIndex][yIndex] = (this.randomizeBuildings
+                            ? new Array(
+                                  Math.max(
+                                      Math.floor(Math.random() * 10) - 6,
+                                      0
+                                  )
+                              )
+                            : new Array(this.initialFloors)
+                        )
+                            .fill(1)
+                            .map(z => ({
+                                type: 'buildings/buildingTiles_000.png',
+                            }))
+                    }
+                }
+            }
+            // created.forEach(row =>
+            //     row.forEach(
+            //         cell =>
+            //             (cell = new Array(
+            //                 Math.max(Math.floor(Math.random() * 10) - 7, 0)
+            //             )
+            //                 .fill(1)
+            //                 .map(z => ({
+            //                     type: 'buildings/buildingTiles_000.png',
+            //                 })))
+            //     )
+            // )
+            // } else if (this.initialFloors > 0) {
+            //     created.forEach(row =>
+            //         row.forEach(
+            //             cell =>
+            //                 (cell = new Array(this.initialFloors)
+            //                     .fill(1)
+            //                     .map(z => ({
+            //                         type: 'buildings/buildingTiles_000.png',
+            //                     })))
+            //         )
+            //     )
+            // }
+
+            return created
         },
         getRandomizedCoordsData() {
-            return new Array(this.maxSizeX + this.sizeX)
-                .fill(1, this.maxSizeX, this.maxSizeX + this.sizeX)
+            return new Array(this.maxSizeX + this.initialSizeX)
+                .fill(1, this.maxSizeX, this.maxSizeX + this.initialSizeX)
                 .map(x =>
-                    new Array(this.maxSizeY + this.sizeY)
-                        .fill(1, this.maxSizeY, this.sizeY)
+                    new Array(this.maxSizeY + this.initialSizeY)
+                        .fill(1, this.maxSizeY, this.initialSizeY)
                         .map(y =>
                             // z (floors)
                             new Array(
@@ -171,9 +282,7 @@ export default {
                 )
         },
         init() {
-            this.coordsData = this.randomizeBuildings
-                ? this.getRandomizedCoordsData()
-                : this.getEmptyCoordsData()
+            this.worldCoords = this.createWorldCoords()
         },
     },
     created() {
@@ -181,16 +290,16 @@ export default {
     },
     data() {
         return {
-            coordsData: undefined,
+            worldCoords: undefined,
         }
     },
     computed: {},
     props: {
-        sizeX: {
+        initialSizeX: {
             type: Number,
             default: () => 6,
         },
-        sizeY: {
+        initialSizeY: {
             type: Number,
             default: () => 3,
         },
@@ -216,10 +325,10 @@ export default {
         },
     },
     watch: {
-        sizeX() {
+        initialSizeX() {
             this.init()
         },
-        sizeY() {
+        initialSizeY() {
             this.init()
         },
         maxSizeX() {
@@ -236,7 +345,7 @@ export default {
         },
     },
     mounted() {
-        window.coordsData = this.coordsData
+        window.VueComponent = this
     },
 }
 </script>

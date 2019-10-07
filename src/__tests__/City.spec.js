@@ -67,22 +67,22 @@ describe('find spaces in use', () => {
     test('simple', () => {
         const wrapper = mount(City)
 
-        wrapper.vm.coordsData[0][0][0] = { type: 'hello' }
+        wrapper.vm.worldCoords[0][0][0] = { type: 'hello' }
         expect(wrapper.vm.floorSpaceInUse({ x: 0, y: 0 })).toBeTruthy()
 
-        wrapper.vm.coordsData[5][5][0] = { type: 'hello' }
+        wrapper.vm.worldCoords[5][5][0] = { type: 'hello' }
         expect(wrapper.vm.floorSpaceInUse({ x: 5, y: 5 })).toBeTruthy()
     })
 
     test('with grid conversion', () => {
         const wrapper = mount(City)
 
-        wrapper.vm.coordsData[0][0][0] = { type: 'hello' }
+        wrapper.vm.worldCoords[0][0][0] = { type: 'hello' }
         expect(
             wrapper.vm.floorSpaceInUse(wrapper.vm.gridToCoords(0, 0))
         ).toBeTruthy()
 
-        wrapper.vm.coordsData[0][1][0] = { type: 'hello' }
+        wrapper.vm.worldCoords[0][1][0] = { type: 'hello' }
         expect(
             wrapper.vm.floorSpaceInUse(wrapper.vm.gridToCoords(0, 2))
         ).toBeFalsy()
@@ -90,12 +90,12 @@ describe('find spaces in use', () => {
             wrapper.vm.floorSpaceInUse(wrapper.vm.gridToCoords(1, 1))
         ).toBeTruthy()
 
-        wrapper.vm.coordsData[1][2][0] = { type: 'hello' }
+        wrapper.vm.worldCoords[1][2][0] = { type: 'hello' }
         expect(
             wrapper.vm.floorSpaceInUse(wrapper.vm.gridToCoords(2, 2))
         ).toBeTruthy()
 
-        wrapper.vm.coordsData[1][4][0] = { type: 'hello' }
+        wrapper.vm.worldCoords[1][4][0] = { type: 'hello' }
         expect(
             wrapper.vm.floorSpaceInUse(wrapper.vm.gridToCoords(2, 4))
         ).toBeTruthy()
@@ -105,7 +105,7 @@ describe('find spaces in use', () => {
         test('simple', () => {
             const wrapper = mount(City)
 
-            wrapper.vm.coordsData[0][4] = new Array(5).fill({ type: 'hello' })
+            wrapper.vm.worldCoords[0][4] = new Array(5).fill({ type: 'hello' })
             expect(wrapper.vm.stackSpaceInUse(0, 1)).toBeTruthy()
             expect(wrapper.vm.stackSpaceInUse(0, 2)).toBeTruthy()
             expect(wrapper.vm.stackSpaceInUse(0, 3)).toBeTruthy()
@@ -114,9 +114,9 @@ describe('find spaces in use', () => {
             const wrapper = mount(City)
 
             let back = new Array(5).fill({ type: 'hello' })
-            wrapper.vm.coordsData[0][4] = back
+            wrapper.vm.worldCoords[0][4] = back
             let front = new Array(10).fill({ type: 'hello' })
-            wrapper.vm.coordsData[0][6] = front
+            wrapper.vm.worldCoords[0][6] = front
 
             expect(wrapper.vm.findStackSpaceCoords(0, 1).value).toBe(front[0])
             expect(wrapper.vm.findStackSpaceCoords(0, 2).value).toBe(front[0])
@@ -128,7 +128,7 @@ describe('find spaces in use', () => {
         test('simple', () => {
             const wrapper = mount(City)
 
-            wrapper.vm.coordsData[0][4] = new Array(5).fill({ type: 'hello' })
+            wrapper.vm.worldCoords[0][4] = new Array(5).fill({ type: 'hello' })
             expect(wrapper.vm.stackSpaceInUse(0, 1)).toBeTruthy()
             expect(wrapper.vm.stackSpaceInUse(0, 2)).toBeTruthy()
             expect(wrapper.vm.stackSpaceInUse(0, 3)).toBeTruthy()
@@ -140,7 +140,7 @@ describe('find spaces in use', () => {
                 },
             })
 
-            wrapper.vm.coordsData[0][6] = new Array(7).fill({ type: 'hello' })
+            wrapper.vm.worldCoords[0][6] = new Array(7).fill({ type: 'hello' })
             wrapper.vm.$forceUpdate()
 
             let lower = wrapper.find('[x="0"][y="4"] > div > img')
@@ -168,12 +168,17 @@ describe('find spaces in use', () => {
             )
         })
         test('detects two overlapping buildings and takes the front one', () => {
-            const wrapper = mount(City)
+            const wrapper = mount(City, { propsData: {
+                maxSizeX: 0,
+                initialSizeX: 6,
+                maxSizeY: 0,
+                initialSizeY: 6,
+            }})
 
             let back = new Array(5).fill({ type: 'hello' })
-            wrapper.vm.coordsData[0][4] = back
+            wrapper.vm.worldCoords[0][4] = back
             let front = new Array(10).fill({ type: 'hello' })
-            wrapper.vm.coordsData[0][6] = front
+            wrapper.vm.worldCoords[0][6] = front
 
             expect(wrapper.vm.findStackSpaceCoords(0, 1).value).toBe(front[0])
             expect(wrapper.vm.findStackSpaceCoords(0, 2).value).toBe(front[0])
