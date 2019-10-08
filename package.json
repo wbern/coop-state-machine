@@ -16,8 +16,8 @@
   },
   "devDependencies": {
     "@babel/core": "^7.6.2",
-    "@storybook/addon-knobs": "^5.2.1",
     "@storybook/addon-actions": "^5.2.1",
+    "@storybook/addon-knobs": "^5.2.1",
     "@storybook/addon-links": "^5.2.1",
     "@storybook/addons": "^5.2.1",
     "@storybook/vue": "^5.2.1",
@@ -36,6 +36,8 @@
     "eslint-plugin-vue": "^5.0.0",
     "jest": "^24.9.0",
     "jest-serializer-vue": "^0.2.0",
+    "monaco-editor": "^0.18.1",
+    "raw-loader": "^3.1.0",
     "vue-jest": "^3.0.5",
     "vue-template-compiler": "^2.6.10"
   },

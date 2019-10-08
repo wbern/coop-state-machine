@@ -47,6 +47,8 @@
 <script>
 import BuildingBlock from './components/BuildingBlock'
 
+import { runScript } from './runner'
+
 export default {
     name: 'City',
     components: { 'building-block': BuildingBlock },
@@ -60,7 +62,11 @@ export default {
                 )
             }
         },
-        getLowestWorldY(lowestWorldX = this.getLowestWorldX(), screenX = 0, bla = 0) {
+        getLowestWorldY(
+            lowestWorldX = this.getLowestWorldX(),
+            screenX = 0,
+            bla = 0
+        ) {
             // gets a starting value
             let lowestWorldY = this.worldCoords[lowestWorldX].findIndex(
                 (val, index, arr) => index in arr
@@ -417,6 +423,7 @@ export default {
     },
     mounted() {
         window.VueComponent = this
+        window.runScript = runScript;
     },
 }
 </script>
