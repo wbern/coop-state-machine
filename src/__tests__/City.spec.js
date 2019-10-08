@@ -155,9 +155,8 @@ describe('find spaces in use', () => {
 
             wrapper.vm.setWorldCoords({ x: 0, y: 4 }, undefined)
             wrapper.vm.worldCoords[0][4] = new Array(4).fill({ type: 'hello' })
+            expect(wrapper.vm.stackSpaceInUse(0, 0)).toBeTruthy()
             expect(wrapper.vm.stackSpaceInUse(0, 1)).toBeTruthy()
-            expect(wrapper.vm.stackSpaceInUse(0, 2)).toBeTruthy()
-            expect(wrapper.vm.stackSpaceInUse(0, 3)).toBeTruthy()
         })
         test('z-index correctly showing on div elements', () => {
             const wrapper = mount(City, {
@@ -170,9 +169,9 @@ describe('find spaces in use', () => {
             wrapper.vm.worldCoords[0][6] = new Array(7).fill({ type: 'hello' })
             wrapper.vm.$forceUpdate()
 
-            let lower = wrapper.find('[x="0"][y="4"] > div > img')
-            let higher = wrapper.find('[x="0"][y="3"] > div > img')
-            let highest = wrapper.find('[x="0"][y="0"] > div > img')
+            let lower = wrapper.find('[data-screen-x="0"][data-screen-y="4"] > div img')
+            let higher = wrapper.find('[data-screen-x="0"][data-screen-y="3"] > div img')
+            let highest = wrapper.find('[data-screen-x="0"][data-screen-y="0"] > div img')
 
             expect(lower).not.toBe(null)
             expect(higher).not.toBe(null)

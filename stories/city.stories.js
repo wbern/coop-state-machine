@@ -14,7 +14,7 @@ export const toStorybook = () => ({
     props: {
         showImages: {
             type: Boolean,
-            default: () => boolean('showImages', true, 'visuals'),
+            default: () => boolean('showImages', false, 'visuals'),
         },
         randomizeBuildings: {
             type: Boolean,

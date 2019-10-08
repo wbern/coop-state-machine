@@ -1,21 +1,29 @@
 // eslint-disable vue/no-use-v-if-with-v-for
 <template>
     <div id="city" class="grid">
-        <div v-for="(undefined, screenX) in worldCoords.length" :key="screenX" class="grid-column">
+        <div
+            v-for="(undefined, screenX) in worldCoords.length - getLowestWorldX()"
+            :key="screenX"
+            class="grid-column"
+            :data-screen-x="screenX"
+        >
             <div
-                v-for="(cell, screenY) in (worldCoords[screenToWorldCoords(screenX).x] || []).length"
+                v-for="(cell, screenY) in (worldCoords[screenToWorldCoords(screenX).x] || []).length - getLowestWorldY()"
+                :data-len="(worldCoords[screenToWorldCoords(screenX).x] || []).length"
                 :key="screenY"
-                :data-x="screenX"
-                :data-y="screenY"
+                :data-screen-x="screenX"
+                :data-screen-y="screenY"
+                :data-world-x="validFloorSpace(screenX, screenY) && screenToWorldCoords(screenX, screenY).x"
+                :data-world-y="validFloorSpace(screenX, screenY) && screenToWorldCoords(screenX, screenY).y"
             >
                 <div
-                    v-if="findStackSpaceCoords(screenX, screenY) || !validFloorSpace(screenX, screenY) || worldCoords[screenToWorldCoords(screenX, screenY).x][screenToWorldCoords(screenX, screenY).y]"
                     class="grid-block"
                     :class="{
                     'grid-block--valid-floor-space': validFloorSpace(screenX, screenY),
                     'grid-block--valid-stack-space': true,
                     'grid-block--floor-space-in-use': validFloorSpace(screenX, screenY) && floorSpaceInUse(screenToWorldCoords(screenX, screenY)),
                     'grid-block--stack-space-in-use': stackSpaceInUse(screenX, screenY),
+                    'grid-block--stack-and-floor-space-in-use': validFloorSpace(screenX, screenY) && floorSpaceInUse(screenToWorldCoords(screenX, screenY)) && stackSpaceInUse(screenX, screenY)
                 }"
                 >
                     <!-- <span style="font-size: 8px;">Hello</span> -->
@@ -43,35 +51,16 @@ export default {
     name: 'City',
     components: { 'building-block': BuildingBlock },
     methods: {
-        getTileNumber(i) {
-            // '/buildings/buildingTiles_' + getTileNumber(y * x) + '.png'
-
-            return '000'
-            // return y.toString().padStart(3, '0')
-        },
-        screenToWorldCoords(screenX, screenY) {
-            if (
-                !this.validFloorSpace(
-                    screenX,
-                    screenY !== undefined ? screenY : screenX
-                )
-            ) {
-                throw new Error(
-                    'cannot convert to coords with uneven grid coords'
-                )
-            }
-
-            // make screenX and screenY equal to the world coords (first that is not "empty")
-            let lowestWorldX = this.worldCoords.findIndex(
-                (val, index, arr) => index in arr
-            )
+        getLowestWorldX() {
+            return this.worldCoords.findIndex((val, index, arr) => index in arr)
 
             if (isNaN(lowestWorldX)) {
-                throw new Error('there are no created world coordinates')
+                throw new Error(
+                    'Easy there cowboy! there are no created world coordinates yet, probably'
+                )
             }
-
-            let res = {}
-
+        },
+        getLowestWorldY(lowestWorldX = this.getLowestWorldX(), screenX = 0, bla = 0) {
             // gets a starting value
             let lowestWorldY = this.worldCoords[lowestWorldX].findIndex(
                 (val, index, arr) => index in arr
@@ -99,17 +88,46 @@ export default {
                 )
             }
 
-            res.x =
-                (lowestWorldX +
-                    screenX -
-                    (this.isOddSpace(
-                        lowestWorldX + screenX,
-                        lowestWorldY +
-                            (screenY !== undefined ? screenY : screenX)
-                    )
-                        ? 1
-                        : 0)) /
-                2
+            return lowestWorldY
+        },
+        getTileNumber(i) {
+            // '/buildings/buildingTiles_' + getTileNumber(y * x) + '.png'
+
+            return '000'
+            // return y.toString().padStart(3, '0')
+        },
+        screenToWorldCoords(screenX, screenY) {
+            if (
+                !this.validFloorSpace(
+                    screenX,
+                    screenY !== undefined ? screenY : screenX
+                )
+            ) {
+                throw new Error(
+                    'cannot convert to coords with uneven grid coords'
+                )
+            }
+
+            // make screenX and screenY equal to the world coords (first that is not "empty")
+            let lowestWorldX = this.getLowestWorldX()
+
+            let res = {}
+
+            let lowestWorldY = this.getLowestWorldY(lowestWorldX)
+
+            // res.x =
+            //     (lowestWorldX +
+            //         screenX -
+            //         (this.isOddSpace(
+            //             lowestWorldX + screenX,
+            //             lowestWorldY +
+            //                 (screenY !== undefined ? screenY : screenX)
+            //         )
+            //             ? 1
+            //             : 0)) /
+            //     2
+            res.x = lowestWorldX + (screenX - (screenX % 2)) / 2
+
             res.y = (screenY !== undefined ? screenY : screenX) + lowestWorldY
 
             return res
@@ -158,16 +176,16 @@ export default {
             let coords
 
             for (
-                let i = startingScreenY + (startingScreenY % 2);
+                // let i = startingScreenY + 1 + ((startingScreenY + 1) % 2);
+                let i = startingScreenY + 1;
                 i < yLength || yLength === undefined;
                 i++
             ) {
                 if (!coords && this.validFloorSpace(startingScreenX, i)) {
                     coords = this.screenToWorldCoords(startingScreenX, i)
                 }
-                
-                if (coords) {
 
+                if (coords) {
                     if (yLength === undefined) {
                         yLength = this.worldCoords[coords.x].length
                     }
@@ -419,6 +437,7 @@ export default {
     display: flex;
     flex-direction: row;
     justify-content: center;
+    align-items: center;
 }
 .grid-column {
     display: flex;
@@ -454,6 +473,9 @@ export default {
 }
 .grid-block--stack-space-in-use {
     background: rgba(200, 50, 255, 1);
+}
+.grid-block--stack-and-floor-space-in-use {
+    background: rgba(100, 170, 255, 1);
 }
 .grid-image {
     /* height: 4rem;
