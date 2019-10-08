@@ -44,22 +44,31 @@ describe('basic', () => {
 describe('grid conversions', () => {
     test('invalid space', () => {
         const wrapper = mount(City)
+
+        wrapper.vm.worldCoords = new Array(1).fill(new Array(1).fill(new Array(1).fill({})))
+
         // printGrid({ x: 1, y: 0, type: 'X' })
-        expect(() => wrapper.vm.gridToCoords(1, 0)).toThrow()
-        expect(() => wrapper.vm.gridToCoords(3, 0)).toThrow()
+        expect(() => wrapper.vm.screenToWorldCoords(1, 0)).toThrow()
+        expect(() => wrapper.vm.screenToWorldCoords(3, 0)).toThrow()
     })
 
     test('valid, even spaces', () => {
         const wrapper = mount(City)
-        expect(wrapper.vm.gridToCoords(0, 0)).toEqual({ x: 0, y: 0 })
-        expect(wrapper.vm.gridToCoords(2, 0)).toEqual({ x: 1, y: 0 })
-        expect(wrapper.vm.gridToCoords(2, 2)).toEqual({ x: 1, y: 2 })
+
+        wrapper.vm.worldCoords = new Array(1).fill(new Array(1).fill(new Array(1).fill({})))
+
+        expect(wrapper.vm.screenToWorldCoords(0, 0)).toEqual({ x: 0, y: 0 })
+        expect(wrapper.vm.screenToWorldCoords(2, 0)).toEqual({ x: 1, y: 0 })
+        expect(wrapper.vm.screenToWorldCoords(2, 2)).toEqual({ x: 1, y: 2 })
     })
 
     test('valid, odd spaces', () => {
         const wrapper = mount(City)
-        expect(wrapper.vm.gridToCoords(1, 1)).toEqual({ x: 0, y: 1 })
-        expect(wrapper.vm.gridToCoords(3, 1)).toEqual({ x: 1, y: 1 })
+
+        wrapper.vm.worldCoords = new Array(1).fill(new Array(1).fill(new Array(1).fill({})))
+
+        expect(wrapper.vm.screenToWorldCoords(1, 1)).toEqual({ x: 0, y: 1 })
+        expect(wrapper.vm.screenToWorldCoords(3, 1)).toEqual({ x: 1, y: 1 })
     })
 })
 
@@ -67,37 +76,47 @@ describe('find spaces in use', () => {
     test('simple', () => {
         const wrapper = mount(City)
 
-        wrapper.vm.worldCoords[0][0][0] = { type: 'hello' }
+        wrapper.vm.setWorldCoords({ x: 0, y: 0 }, { type: 'hello' })
         expect(wrapper.vm.floorSpaceInUse({ x: 0, y: 0 })).toBeTruthy()
 
-        wrapper.vm.worldCoords[5][5][0] = { type: 'hello' }
+        wrapper.vm.setWorldCoords({ x: 5, y: 5 }, { type: 'hello' })
         expect(wrapper.vm.floorSpaceInUse({ x: 5, y: 5 })).toBeTruthy()
+    })
+
+    test('going out of bounds', () => {
+        const wrapper = mount(City)
+
+        expect(() =>
+            wrapper.vm.setWorldCoords({ x: 0, y: 0, z: 1 }, { type: 'hello' })
+        ).toThrow()
     })
 
     test('with grid conversion', () => {
         const wrapper = mount(City)
 
-        wrapper.vm.worldCoords[0][0][0] = { type: 'hello' }
+        wrapper.vm.setWorldCoords({ x: 0, y: 0 }, { type: 'hello' })
+
         expect(
-            wrapper.vm.floorSpaceInUse(wrapper.vm.gridToCoords(0, 0))
+            wrapper.vm.floorSpaceInUse(wrapper.vm.screenToWorldCoords(0, 0))
         ).toBeTruthy()
 
-        wrapper.vm.worldCoords[0][1][0] = { type: 'hello' }
+        wrapper.vm.setWorldCoords({ x: 0, y: 1 }, { type: 'hello' })
+        wrapper.vm.screenToWorldCoords(0, 2)
         expect(
-            wrapper.vm.floorSpaceInUse(wrapper.vm.gridToCoords(0, 2))
+            wrapper.vm.floorSpaceInUse(wrapper.vm.screenToWorldCoords(0, 2))
         ).toBeFalsy()
         expect(
-            wrapper.vm.floorSpaceInUse(wrapper.vm.gridToCoords(1, 1))
+            wrapper.vm.floorSpaceInUse(wrapper.vm.screenToWorldCoords(1, 1))
         ).toBeTruthy()
 
-        wrapper.vm.worldCoords[1][2][0] = { type: 'hello' }
+        wrapper.vm.setWorldCoords({ x: 1, y: 2 }, { type: 'hello' })
         expect(
-            wrapper.vm.floorSpaceInUse(wrapper.vm.gridToCoords(2, 2))
+            wrapper.vm.floorSpaceInUse(wrapper.vm.screenToWorldCoords(2, 2))
         ).toBeTruthy()
 
-        wrapper.vm.worldCoords[1][4][0] = { type: 'hello' }
+        wrapper.vm.setWorldCoords({ x: 1, y: 4 }, { type: 'hello' })
         expect(
-            wrapper.vm.floorSpaceInUse(wrapper.vm.gridToCoords(2, 4))
+            wrapper.vm.floorSpaceInUse(wrapper.vm.screenToWorldCoords(2, 4))
         ).toBeTruthy()
     })
 
@@ -105,6 +124,7 @@ describe('find spaces in use', () => {
         test('simple', () => {
             const wrapper = mount(City)
 
+            wrapper.vm.setWorldCoords({ x: 0, y: 4 }, undefined)
             wrapper.vm.worldCoords[0][4] = new Array(5).fill({ type: 'hello' })
             expect(wrapper.vm.stackSpaceInUse(0, 1)).toBeTruthy()
             expect(wrapper.vm.stackSpaceInUse(0, 2)).toBeTruthy()
@@ -113,10 +133,15 @@ describe('find spaces in use', () => {
         test('detects two overlapping buildings and takes the front one', () => {
             const wrapper = mount(City)
 
-            let back = new Array(5).fill({ type: 'hello' })
-            wrapper.vm.worldCoords[0][4] = back
-            let front = new Array(10).fill({ type: 'hello' })
-            wrapper.vm.worldCoords[0][6] = front
+            wrapper.vm.setWorldCoords({ x: 0, y: 5 }, undefined)
+            let back = new Array(5).fill({ type: 'back' })
+            wrapper.vm.worldCoords[0][5] = back
+
+            wrapper.vm.setWorldCoords({ x: 0, y: 10 }, undefined)
+            let front = new Array(10).fill({ type: 'front' })
+            wrapper.vm.worldCoords[0][10] = front
+
+            expect(wrapper.vm.findStackSpaceCoords(0, 1)).not.toBe(undefined)
 
             expect(wrapper.vm.findStackSpaceCoords(0, 1).value).toBe(front[0])
             expect(wrapper.vm.findStackSpaceCoords(0, 2).value).toBe(front[0])
@@ -128,7 +153,8 @@ describe('find spaces in use', () => {
         test('simple', () => {
             const wrapper = mount(City)
 
-            wrapper.vm.worldCoords[0][4] = new Array(5).fill({ type: 'hello' })
+            wrapper.vm.setWorldCoords({ x: 0, y: 4 }, undefined)
+            wrapper.vm.worldCoords[0][4] = new Array(4).fill({ type: 'hello' })
             expect(wrapper.vm.stackSpaceInUse(0, 1)).toBeTruthy()
             expect(wrapper.vm.stackSpaceInUse(0, 2)).toBeTruthy()
             expect(wrapper.vm.stackSpaceInUse(0, 3)).toBeTruthy()
@@ -140,6 +166,7 @@ describe('find spaces in use', () => {
                 },
             })
 
+            wrapper.vm.setWorldCoords({ x: 0, y: 6 }, { type: 'hello' })
             wrapper.vm.worldCoords[0][6] = new Array(7).fill({ type: 'hello' })
             wrapper.vm.$forceUpdate()
 
@@ -166,23 +193,6 @@ describe('find spaces in use', () => {
             expect(Number(higher.element.style.zIndex)).toBeLessThan(
                 Number(highest.element.style.zIndex)
             )
-        })
-        test('detects two overlapping buildings and takes the front one', () => {
-            const wrapper = mount(City, { propsData: {
-                maxSizeX: 0,
-                initialSizeX: 6,
-                maxSizeY: 0,
-                initialSizeY: 6,
-            }})
-
-            let back = new Array(5).fill({ type: 'hello' })
-            wrapper.vm.worldCoords[0][4] = back
-            let front = new Array(10).fill({ type: 'hello' })
-            wrapper.vm.worldCoords[0][6] = front
-
-            expect(wrapper.vm.findStackSpaceCoords(0, 1).value).toBe(front[0])
-            expect(wrapper.vm.findStackSpaceCoords(0, 2).value).toBe(front[0])
-            expect(wrapper.vm.findStackSpaceCoords(0, 3).value).toBe(front[0])
         })
     })
 })

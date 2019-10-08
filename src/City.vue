@@ -72,19 +72,32 @@ export default {
 
             let res = {}
 
+            // gets a starting value
             let lowestWorldY = this.worldCoords[lowestWorldX].findIndex(
                 (val, index, arr) => index in arr
             )
 
-            this.worldCoords.forEach(row =>
-                row.forEach((cell, yIndex) =>
-                    cell.forEach((floor, zIndex) => {
-                        if (cell && lowestWorldY > yIndex - zIndex) {
-                            lowestWorldY = yIndex - zIndex
-                        }
-                    })
-                )
+            // respects how tall something is in order to get the lowest y coordinate
+            // we want to make sure to render tall buildings as well
+            this.worldCoords.forEach(
+                row =>
+                    Array.isArray(row) &&
+                    row.forEach(
+                        (cell, yIndex) =>
+                            Array.isArray(cell) &&
+                            cell.forEach((floor, zIndex) => {
+                                if (cell && lowestWorldY > yIndex - zIndex) {
+                                    lowestWorldY = yIndex - zIndex
+                                }
+                            })
+                    )
             )
+
+            if (lowestWorldY < 0) {
+                throw new Error(
+                    'building is too tall, it broke out of the dimensions'
+                )
+            }
 
             res.x =
                 (lowestWorldX +
@@ -97,7 +110,7 @@ export default {
                         ? 1
                         : 0)) /
                 2
-            res.y = lowestWorldY + screenY
+            res.y = (screenY !== undefined ? screenY : screenX) + lowestWorldY
 
             return res
         },
@@ -140,10 +153,24 @@ export default {
         },
         findStackSpaceCoords(startingScreenX, startingScreenY) {
             let lastOneFound
+            let yLength
 
-            for (let i = startingScreenY + 1; i < this.maxSizeY; i++) {
-                if (this.validFloorSpace(startingScreenX, i)) {
-                    let coords = this.screenToWorldCoords(startingScreenX, i)
+            let coords
+
+            for (
+                let i = startingScreenY + (startingScreenY % 2);
+                i < yLength || yLength === undefined;
+                i++
+            ) {
+                if (!coords && this.validFloorSpace(startingScreenX, i)) {
+                    coords = this.screenToWorldCoords(startingScreenX, i)
+                }
+                
+                if (coords) {
+
+                    if (yLength === undefined) {
+                        yLength = this.worldCoords[coords.x].length
+                    }
 
                     let searchCoords = {
                         x: coords.x,
@@ -160,6 +187,8 @@ export default {
                     ) {
                         lastOneFound = res
                     }
+
+                    coords.y++
                 }
             }
 
@@ -180,6 +209,30 @@ export default {
                 }
             }
             return undefined
+        },
+        setWorldCoords(coords, data = {}) {
+            let s = this.worldCoords
+            let c = coords
+
+            if (coords.y - (coords.z || 0) < 0) {
+                throw new Error(
+                    'cannot break the positive 3D dimensions, sorry'
+                )
+            }
+
+            s = s || new Array(0)
+
+            // x
+            s[c.x] = s[c.x] || new Array(0)
+
+            // y
+            s[c.x][c.y] = s[c.x][c.y] || new Array(0)
+
+            // z
+            // s[c.x][c.y][c.z || 0] = s[c.x][c.y][c.z || 0] || []
+
+            // set data
+            s[c.x][c.y][c.z || 0] = data
         },
         getFloorSpaceZ(x, y) {
             return y
