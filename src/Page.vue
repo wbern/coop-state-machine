@@ -1,6 +1,13 @@
 <template>
     <div class="page-wrapper">
-        <City></City>
+        <div class="left-wrapper">
+            <City></City>
+            <div class="city-controls">
+                <ui-icon class="city-controls_icon" icon="skip_previous"></ui-icon>
+                <ui-icon class="city-controls_icon" icon="play_arrow"></ui-icon>
+                <ui-icon class="city-controls_icon" icon="skip_next"></ui-icon>
+            </div>
+        </div>
         <ui-tabs type="icon-and-text" fullwidth fullheight ref="controlTabs">
             <ui-tab
                 :disabled="tab.id === 'tab2' && disableTab2"
@@ -27,33 +34,48 @@ export default {
     data: () => ({
         controlTabs: [
             {
-                title: 'Tab 1',
+                title: 'Your Code',
                 icon: 'looks_one',
                 id: 'tab1',
             },
             {
-                title: 'Tab 2',
+                title: 'Others Code',
                 icon: 'looks_two',
                 id: 'tab2',
             },
             {
-                title: 'Tab 3',
+                title: 'Game config',
                 icon: 'looks_3',
                 id: 'tab3',
-            },
-            {
-                title: 'Tab 4',
-                icon: 'looks_4',
-                id: 'tab4',
             },
         ],
     }),
 }
 </script>
+<style scoped>
+.city-controls {
+    flex: 0.1 0.1;
+    align-self: center;
+}
+.city-controls_icon {
+    font-size: 36px;
+}
+.left-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+.page-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+}
+</style>
 <style>
 @import '~material-design-icons/iconfont/material-icons.css';
 
 .ui-tabs {
+    flex: 1;
     display: flex;
     flex-direction: column;
     margin-bottom: 0;
@@ -69,12 +91,5 @@ export default {
 .ui-tab {
     display: flex;
     flex: 1;
-}
-</style>
-<style scoped>
-.page-wrapper {
-    flex: 1;
-    display: flex;
-    flex-direction: row;
 }
 </style>
