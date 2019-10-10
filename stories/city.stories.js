@@ -10,7 +10,7 @@ export default {
 
 addDecorator(withKnobs)
 
-export const toStorybook = () => ({
+export const city = () => ({
     props: {
         showImages: {
             type: Boolean,
@@ -57,6 +57,6 @@ export const toStorybook = () => ({
     methods: { action: linkTo('Button') },
 })
 
-toStorybook.story = {
-    name: 'to Storybook',
-}
+// city.story = {
+//     name: 'to Storybook',
+// }

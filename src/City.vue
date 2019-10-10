@@ -440,6 +440,7 @@ export default {
 
 .grid {
     border: 1px dotted black;
+    flex: 1;
     width: 100%;
     display: flex;
     flex-direction: row;
