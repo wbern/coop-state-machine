@@ -2,14 +2,14 @@
 <template>
     <div id="city" class="grid">
         <div
-            v-for="(undefined, screenX) in worldCoords.length - getLowestWorldX()"
+            v-for="(undefined, screenX) in $store.state.worldCoords.length - getLowestWorldX()"
             :key="screenX"
             class="grid-column"
             :data-screen-x="screenX"
         >
             <div
-                v-for="(cell, screenY) in (worldCoords[screenToWorldCoords(screenX).x] || []).length - getLowestWorldY()"
-                :data-len="(worldCoords[screenToWorldCoords(screenX).x] || []).length"
+                v-for="(cell, screenY) in ($store.state.worldCoords[screenToWorldCoords(screenX).x] || []).length - getLowestWorldY()"
+                :data-len="($store.state.worldCoords[screenToWorldCoords(screenX).x] || []).length"
                 :key="screenY"
                 :data-screen-x="screenX"
                 :data-screen-y="screenY"
@@ -52,7 +52,9 @@ export default {
     components: { 'building-block': BuildingBlock },
     methods: {
         getLowestWorldX() {
-            return this.worldCoords.findIndex((val, index, arr) => index in arr)
+            return this.$store.state.worldCoords.findIndex(
+                (val, index, arr) => index in arr
+            )
 
             if (isNaN(lowestWorldX)) {
                 throw new Error(
@@ -66,13 +68,13 @@ export default {
             bla = 0
         ) {
             // gets a starting value
-            let lowestWorldY = this.worldCoords[lowestWorldX].findIndex(
-                (val, index, arr) => index in arr
-            )
+            let lowestWorldY = this.$store.state.worldCoords[
+                lowestWorldX
+            ].findIndex((val, index, arr) => index in arr)
 
             // respects how tall something is in order to get the lowest y coordinate
             // we want to make sure to render tall buildings as well
-            this.worldCoords.forEach(
+            this.$store.state.worldCoords.forEach(
                 row =>
                     Array.isArray(row) &&
                     row.forEach(
@@ -191,7 +193,7 @@ export default {
 
                 if (coords) {
                     if (yLength === undefined) {
-                        yLength = this.worldCoords[coords.x].length
+                        yLength = this.$store.state.worldCoords[coords.x].length
                     }
 
                     let searchCoords = {
@@ -218,9 +220,9 @@ export default {
         },
         getWorldCoords(coords) {
             let value =
-                this.worldCoords[coords.x] &&
-                this.worldCoords[coords.x][coords.y] &&
-                this.worldCoords[coords.x][coords.y][coords.z || 0]
+                this.$store.state.worldCoords[coords.x] &&
+                this.$store.state.worldCoords[coords.x][coords.y] &&
+                this.$store.state.worldCoords[coords.x][coords.y][coords.z || 0]
 
             if (value) {
                 return {
@@ -233,28 +235,7 @@ export default {
             return undefined
         },
         setWorldCoords(coords, data = {}) {
-            let s = this.worldCoords
-            let c = coords
-
-            if (coords.y - (coords.z || 0) < 0) {
-                throw new Error(
-                    'cannot break the positive 3D dimensions, sorry'
-                )
-            }
-
-            s = s || new Array(0)
-
-            // x
-            s[c.x] = s[c.x] || new Array(0)
-
-            // y
-            s[c.x][c.y] = s[c.x][c.y] || new Array(0)
-
-            // z
-            // s[c.x][c.y][c.z || 0] = s[c.x][c.y][c.z || 0] || []
-
-            // set data
-            s[c.x][c.y][c.z || 0] = data
+            this.$store.commit('setWorldCoords', { coords, data })
         },
         getFloorSpaceZ(x, y) {
             return y
@@ -264,109 +245,17 @@ export default {
 
             return stackSource.y + stackSource.z
         },
-        clearCoordsData() {
-            this.worldCoords = this.createWorldCoords()
-        },
-        createWorldCoords() {
-            let created = new Array(this.maxSizeX + this.initialSizeX)
-                .fill(1, this.maxSizeX, this.maxSizeX + this.initialSizeX)
-                .map(x =>
-                    new Array(this.maxSizeY + this.initialSizeY)
-                        .fill(
-                            1,
-                            this.maxSizeY,
-                            this.maxSizeY + this.initialSizeY
-                        )
-                        .map(
-                            y =>
-                                // z (floors)
-                                new Array(this.maxSizeZ)
-                        )
-                )
-
-            if (this.randomizeBuildings || this.initialFloors > 0) {
-                for (
-                    let xIndex = this.maxSizeX;
-                    xIndex < this.maxSizeX + this.initialSizeX;
-                    xIndex++
-                ) {
-                    for (
-                        let yIndex = this.maxSizeY;
-                        yIndex < this.maxSizeY + this.initialSizeY;
-                        yIndex++
-                    ) {
-                        created[xIndex][yIndex] = (this.randomizeBuildings
-                            ? new Array(
-                                  Math.max(
-                                      Math.floor(Math.random() * 10) - 6,
-                                      0
-                                  )
-                              )
-                            : new Array(this.initialFloors)
-                        )
-                            .fill(1)
-                            .map(z => ({
-                                type: 'buildings/buildingTiles_000.png',
-                            }))
-                    }
-                }
-            }
-            // created.forEach(row =>
-            //     row.forEach(
-            //         cell =>
-            //             (cell = new Array(
-            //                 Math.max(Math.floor(Math.random() * 10) - 7, 0)
-            //             )
-            //                 .fill(1)
-            //                 .map(z => ({
-            //                     type: 'buildings/buildingTiles_000.png',
-            //                 })))
-            //     )
-            // )
-            // } else if (this.initialFloors > 0) {
-            //     created.forEach(row =>
-            //         row.forEach(
-            //             cell =>
-            //                 (cell = new Array(this.initialFloors)
-            //                     .fill(1)
-            //                     .map(z => ({
-            //                         type: 'buildings/buildingTiles_000.png',
-            //                     })))
-            //         )
-            //     )
-            // }
-
-            return created
-        },
-        getRandomizedCoordsData() {
-            return new Array(this.maxSizeX + this.initialSizeX)
-                .fill(1, this.maxSizeX, this.maxSizeX + this.initialSizeX)
-                .map(x =>
-                    new Array(this.maxSizeY + this.initialSizeY)
-                        .fill(1, this.maxSizeY, this.initialSizeY)
-                        .map(y =>
-                            // z (floors)
-                            new Array(
-                                Math.max(Math.floor(Math.random() * 10) - 7, 0)
-                            )
-                                .fill(1)
-                                .map(z => ({
-                                    type: 'buildings/buildingTiles_000.png',
-                                }))
-                        )
-                )
-        },
         init() {
-            this.worldCoords = this.createWorldCoords()
+            this.$store.commit('resetWorldCoords', {
+                ...this.$props,
+            })
         },
     },
     created() {
         this.init()
     },
     data() {
-        return {
-            worldCoords: undefined,
-        }
+        return {}
     },
     computed: {},
     props: {

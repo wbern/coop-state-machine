@@ -15,6 +15,8 @@ export const sandbox = new (function() {
 
     this.getExistingSandbox = () => document.querySelector('iframe#runner')
 
+    this.doesSandboxExist = () => !!this.getExistingSandbox()
+
     this.killSandbox = (timeout = TIMEOUT_DEBUG) => {
         let runnerIframe = this.getExistingSandbox()
         if (runnerIframe) {
@@ -29,7 +31,7 @@ export const sandbox = new (function() {
         }
     }
 
-    this.killWorkers = () => {
+    this.killWorkers = (timeout = TIMEOUT_DEBUG) => {
         let runnerIframe = this.getExistingSandbox()
         if (runnerIframe) {
             return postMessageWait(
@@ -168,4 +170,5 @@ export const sandbox = new (function() {
     }
 })()
 
+window.sandbox = sandbox;
 export default sandbox

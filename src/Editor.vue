@@ -61,13 +61,13 @@ export default {
             // )
         })
 
-        editor.session.on('tokenizerUpdate', (a, editor) => {
+        editor.session.on('tokenizerUpdate', (a, e) => {
             // code has been parsed and annotations (warnings/errors) have been introduced
             if (
                 editor.session &&
                 editor.session.getAnnotations().length === 0
             ) {
-                this.$root.$emit('editor:code-change', {
+                this.$emit('code-change', {
                     getText: () => editor.session.getValue(),
                 })
             }

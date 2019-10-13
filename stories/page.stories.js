@@ -4,6 +4,10 @@ import { linkTo } from '@storybook/addon-links'
 
 import Page from '../src/Page'
 
+import { createStore } from '../src/vuex-bootstrapper'
+
+const store = createStore()
+
 export default {
     title: 'Page',
 }
@@ -11,6 +15,7 @@ export default {
 addDecorator(withKnobs)
 
 export const editor = () => ({
+    store,
     props: {
         // showImages: {
         //     type: Boolean,

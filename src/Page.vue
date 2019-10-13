@@ -3,7 +3,7 @@
         <div class="left-wrapper">
             <City></City>
             <div class="city-controls">
-                <Controls></Controls>
+                <Controls :can-tick="canTick" @tick-request="onTickRequest"></Controls>
             </div>
             <div class="output-window">
                 <Output></Output>
@@ -11,7 +11,7 @@
         </div>
         <ui-tabs type="icon-and-text" fullwidth fullheight ref="controlTabs">
             <ui-tab
-                :disabled="tab.id === 'tab2' && disableTab2"
+                :disabled="tab.id === 'tab2'"
                 :id="tab.id"
                 :key="tab.id"
                 :title="tab.title"
@@ -19,7 +19,7 @@
             >
                 <ui-icon :icon="tab.icon" slot="icon"></ui-icon>
                 <!-- {{ tab.title }} -->
-                <Editor></Editor>
+                <Editor @code-change="onCodeChange($event, tab.id)"></Editor>
             </ui-tab>
         </ui-tabs>
     </div>
@@ -36,9 +36,7 @@ import { UiAlert, UiButton, UiTabs, UiTab, UiIcon } from 'keen-ui'
 
 export default {
     components: { City, Editor, Output, UiTabs, UiTab, UiIcon, Controls },
-    mounted() {
-        window.runnerService = runnerService;
-    },
+    mounted() {},
     data: () => ({
         controlTabs: [
             {
@@ -57,7 +55,23 @@ export default {
                 id: 'tab3',
             },
         ],
+        canTick: false,
     }),
+    // computed: {
+    //     canTick() {
+    //         return runnerService.canTick()
+    //     },
+    // },
+    methods: {
+        onTickRequest() {
+            runnerService.tick()
+        },
+        onCodeChange(event, id) {
+            runnerService.setup(id, event.getText())
+            this.canTick = true;
+            this.$forceUpdate();
+        },
+    },
 }
 </script>
 <style scoped>

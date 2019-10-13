@@ -50,12 +50,12 @@ export const postMessageWait = (
                 window.removeEventListener('message', closeHandler)
             }
 
-                        resolve(data)
+            resolve(data)
         }
 
         let onMessage = event => {
             let data = event.data
-            
+
             if (typeof data === 'string') {
                 try {
                     data = JSON.parse(data)
@@ -70,7 +70,6 @@ export const postMessageWait = (
         }
 
         if (isWebWorker) {
-            
             target.onmessage = onMessage
         } else {
             closeHandler = window.addEventListener('message', onMessage)

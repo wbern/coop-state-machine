@@ -1,8 +1,8 @@
 // this code is isolated inside an iframe
+let workerManagers = []
+let currentTick = 0
 
-let workers = []
-
-const createWorker = (name, initialWorkerCode = undefined) => {
+const createWorkerManager = (name, initialWorkerCode = undefined) => {
     // returns a wrapper that helps communicate more easily with the worker
     return new (function() {
         this.name = name
@@ -54,7 +54,10 @@ const createWorker = (name, initialWorkerCode = undefined) => {
                 postMessageWait(worker, { topic: 'tick', state }, undefined, {
                     timeout,
                 })
-            this.postMessage = worker.postMessage
+            this.postMessage = function() {
+                console.warn('Did you mean to use postMessageWait?')
+                return worker.postMessage.apply(worker, arguments)
+            }
 
             this.terminate = () => {
                 worker.terminate()
@@ -69,8 +72,8 @@ const createWorker = (name, initialWorkerCode = undefined) => {
             }
         }
 
-        if (initialWorkerCode) {
-            // createWorker was supplied code immediately, so execute it immediately
+        if (initialWorkerCode !== undefined) {
+            // createWorkerManager was supplied code immediately, so execute it immediately
             this.update(initialWorkerCode)
         }
     })()
@@ -83,12 +86,15 @@ window.addEventListener('message', event => {
         case 'add-webworker-once':
             // a more generic close command for more cleanups than webworkers
             // .. For now it's just closing the web workers though
-            let onceWorker = createWorker('temp', event.data.workerCode)
+            let onceWorkerManager = createWorkerManager(
+                'temp',
+                event.data.workerCode
+            )
 
-            onceWorker
+            onceWorkerManager
                 .tick(event.data.state, event.data.timeout || 2000)
                 .then(result => {
-                    onceWorker.terminate()
+                    onceWorkerManager.terminate()
 
                     window.parent.postMessage(
                         {
@@ -102,16 +108,18 @@ window.addEventListener('message', event => {
 
             break
         case 'add-or-update-webworker':
-            let workerByName = workers.find(
-                worker => worker.name === event.data.name
+            let workerManagerByName = workerManagers.find(
+                workerManager => workerManager.name === event.data.name
             )
 
-            if (workerByName) {
+            debugger;
+
+            if (workerManagerByName) {
                 // worker exists
-                workerByName.update(event.data.workerCode)
+                workerManagerByName.update(event.data.workerCode)
             } else {
-                workers.push(
-                    createWorker(event.data.name, event.data.workerCode)
+                workerManagers.push(
+                    createWorkerManager(event.data.name, event.data.workerCode)
                 )
             }
 
@@ -120,18 +128,36 @@ window.addEventListener('message', event => {
                 { targetOrigin: '*' }
             )
             break
-        case 'tick-webworkers':
-            workers.forEach(worker => {
-                worker.postMessage({
-                    name: 'tick',
-                    ...(event.data.tickData || {}),
-                })
+        case 'tick-one-worker':
+            // ticks one web worker, sends ack back with whether
+            // there are workers left to tick. This is to make
+            // sure that the next worker gets the updated state
+            // that the last worker put its indirect effect on
+            const getWorkersLeftToTick = () =>
+                workerManagers.length - currentTick
+
+            workerManagers[currentTick].tick().then(() => {
+                currentTick++
+
+                if (getWorkersLeftToTick() === 0) {
+                    currentTick = 0
+                }
+
+                window.parent.postMessage(
+                    {
+                        topic: 'tick-one-worker-ack',
+                        id: event.data.id,
+                        allWorkersTicked: currentTick === 0,
+                    },
+                    { targetOrigin: '*' }
+                )
             })
+            break
         case 'close':
             // a more generic close command for more cleanups than webworkers
             // .. For now it's just closing the web workers though
-            workers.filter(worker => {
-                worker.terminate()
+            workerManagers.filter(workerManager => {
+                workerManager.terminate()
                 return false
             })
             window.parent.postMessage(
@@ -140,7 +166,7 @@ window.addEventListener('message', event => {
             )
             break
         case 'close-webworkers':
-            workers.filter(worker => {
+            workerManagers.filter(worker => {
                 worker.terminate()
                 return false
             })
