@@ -3,9 +3,10 @@
         <div class="left-wrapper">
             <City></City>
             <div class="city-controls">
-                <ui-icon class="city-controls_icon" icon="skip_previous"></ui-icon>
-                <ui-icon class="city-controls_icon" icon="play_arrow"></ui-icon>
-                <ui-icon class="city-controls_icon" icon="skip_next"></ui-icon>
+                <Controls></Controls>
+            </div>
+            <div class="output-window">
+                <Output></Output>
             </div>
         </div>
         <ui-tabs type="icon-and-text" fullwidth fullheight ref="controlTabs">
@@ -26,11 +27,13 @@
 <script>
 import City from './City'
 import Editor from './Editor'
+import Output from './Output'
+import Controls from './Controls'
 
 import { UiAlert, UiButton, UiTabs, UiTab, UiIcon } from 'keen-ui'
 
 export default {
-    components: { City, Editor, UiTabs, UiTab, UiIcon },
+    components: { City, Editor, Output, UiTabs, UiTab, UiIcon, Controls },
     data: () => ({
         controlTabs: [
             {
@@ -55,6 +58,11 @@ export default {
 <style scoped>
 .city-controls {
     flex: 0.1 0.1;
+    width: 100%;
+}
+.output-window {
+    flex: 0.4 0.4;
+    width: 100%;
     align-self: center;
 }
 .city-controls_icon {
