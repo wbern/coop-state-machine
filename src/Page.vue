@@ -30,10 +30,15 @@ import Editor from './Editor'
 import Output from './Output'
 import Controls from './Controls'
 
+import runnerService from './runnerService'
+
 import { UiAlert, UiButton, UiTabs, UiTab, UiIcon } from 'keen-ui'
 
 export default {
     components: { City, Editor, Output, UiTabs, UiTab, UiIcon, Controls },
+    mounted() {
+        window.runnerService = runnerService;
+    },
     data: () => ({
         controlTabs: [
             {

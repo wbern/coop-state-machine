@@ -1,66 +1,89 @@
-// this code is isolated inside an iframe, and will not run any user-submitted javascript
+// this code is isolated inside an iframe
 
-const createWorker = workerCode => {
+let workers = []
+
+const createWorker = (name, initialWorkerCode = undefined) => {
     // returns a wrapper that helps communicate more easily with the worker
     return new (function() {
+        this.name = name
+
         const boilerplateWorkerCode = `
                     /* IFRAME_WEBWORKER_CODE */
                     `
-        const workerBlob = new Blob(
-            [boilerplateWorkerCode.replace('/* USER_CODE */', workerCode)],
-            {
-                type: 'text/javascript',
+
+        this.update = workerCode => {
+            // generates a worker
+            const workerBlob = new Blob(
+                [boilerplateWorkerCode.replace('/* USER_CODE */', workerCode)],
+                {
+                    type: 'text/javascript',
+                }
+            )
+
+            const worker = new Worker(URL.createObjectURL(workerBlob))
+
+            worker.onmessage = function(event) {
+                let parsedData
+                try {
+                    parsedData = JSON.parse(event.data)
+                } catch (e) {
+                    console.log(
+                        'could not parse webworker message to JSON: ' +
+                            event.data
+                    )
+                    return
+                }
+
+                // got a command
+                switch (parsedData.topic) {
+                    case 'noop':
+                        console.log('action by inaction')
+                        break
+                    case 'choke':
+                        console.log('epic fail')
+                        break
+                    default:
+                        console.log('received action: ' + parsedData.topic)
+                        break
+                }
+
+                // window.postMessage(event.data, '*')
             }
-        )
 
-        
-        const worker = new Worker(URL.createObjectURL(workerBlob))
+            this.tick = (state, timeout = 2000) =>
+                postMessageWait(worker, { topic: 'tick', state }, undefined, {
+                    timeout,
+                })
+            this.postMessage = worker.postMessage
 
-        worker.onmessage = function(event) {
-                        let parsedData
-            try {
-                parsedData = JSON.parse(event.data)
-            } catch (e) {
-                console.log(
-                    'could not parse webworker message to JSON: ' + event.data
-                )
-                return
+            this.terminate = () => {
+                worker.terminate()
+
+                // invalidate the commands afterwards to troubleshoot more easily
+                this.tick = () => console.warn('tick: worker not active')
+                this.postMessage = () =>
+                    console.warn('postMessage: worker not active')
+
+                this.terminate = () =>
+                    console.warn('terminate: worker not active')
             }
-
-            // got a command
-            switch (parsedData.topic) {
-                case 'noop':
-                    console.log('action by inaction')
-                    break
-                case 'choke':
-                    console.log('epic fail')
-                    break
-                default:
-                    console.log('received action: ' + parsedData.topic)
-                    break
-            }
-
-            // window.postMessage(event.data, '*')
         }
 
-        this.terminate = () => worker.terminate()
-        this.postMessage = worker.postMessage
-
-        this.tick = (state, timeout = 2000) =>
-            postMessageWait(worker, { topic: 'tick', state }, undefined, {
-                timeout,
-            })
+        if (initialWorkerCode) {
+            // createWorker was supplied code immediately, so execute it immediately
+            this.update(initialWorkerCode)
+        }
     })()
 }
 
 window.addEventListener('message', event => {
-    console.log('message from parent: ', (event || {}).data)
+    console.log('iframe received message: ', (event || {}).data)
 
     switch (event.data.topic) {
         case 'add-webworker-once':
             // a more generic close command for more cleanups than webworkers
             // .. For now it's just closing the web workers though
-            let onceWorker = createWorker(event.data.workerCode)
+            let onceWorker = createWorker('temp', event.data.workerCode)
 
             onceWorker
                 .tick(event.data.state, event.data.timeout || 2000)
@@ -78,10 +101,22 @@ window.addEventListener('message', event => {
                 })
 
             break
-        case 'add-webworker':
-            workers.push(createWorker(event.data.workerCode))
+        case 'add-or-update-webworker':
+            let workerByName = workers.find(
+                worker => worker.name === event.data.name
+            )
+
+            if (workerByName) {
+                // worker exists
+                workerByName.update(event.data.workerCode)
+            } else {
+                workers.push(
+                    createWorker(event.data.name, event.data.workerCode)
+                )
+            }
+
             window.parent.postMessage(
-                { topic: 'add-webworker-ack', id: event.data.id },
+                { topic: 'add-or-update-webworker-ack', id: event.data.id },
                 { targetOrigin: '*' }
             )
             break
@@ -120,8 +155,6 @@ window.addEventListener('message', event => {
     }
 })
 
-let workers = []
-
 const getUniqueId = () => window.crypto.getRandomValues(new Uint32Array(1))[0]
 
 const isTopicObject = obj => typeof obj === 'object' && obj !== null
@@ -136,12 +169,7 @@ const postMessageAck = (target, receivedMessage, postMessageOptions) => {
     }
 }
 
-const postMessageWait = (
-    target,
-    message,
-    postMessageOptions,
-    options = {}
-) =>
+const postMessageWait = (target, message, postMessageOptions, options = {}) =>
     new Promise((resolve, reject) => {
         let topicObject = isTopicObject(message)
         let isWebWorker = false
@@ -173,12 +201,12 @@ const postMessageWait = (
                 window.removeEventListener('message', closeHandler)
             }
 
-                        resolve(data)
+            resolve(data)
         }
 
         let onMessage = event => {
             let data = event.data
-            
+
             if (typeof data === 'string') {
                 try {
                     data = JSON.parse(data)
@@ -193,7 +221,6 @@ const postMessageWait = (
         }
 
         if (isWebWorker) {
-            
             target.onmessage = onMessage
         } else {
             closeHandler = window.addEventListener('message', onMessage)
@@ -209,7 +236,6 @@ const postMessageWait = (
             cleanUpAndExit(null)
         }, options.timeout || 2000)
     })
-
 
 // signal that it's loaded so we can start receiving commands
 window.parent.postMessage({ topic: 'iframe-loaded' }, { targetOrigin: '*' })

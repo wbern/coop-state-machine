@@ -18,12 +18,24 @@ import { Range, EditSession } from 'ace-builds'
 import 'ace-builds/src-noconflict/ext-language_tools'
 import 'ace-builds/src-noconflict/mode-javascript'
 import 'ace-builds/webpack-resolver'
+// import DiffMatchPatch from 'diff-match-patch'
+
 // import ace from 'ace-builds/src/mode-javascript'
 // import '!file-loader!ace-builds/src/'
 
 export default {
     mounted() {
         const editor = ace.edit(this.$refs.editor)
+
+        // Use this later for networking
+        // You can also use the following properties:
+        // DiffMatchPatch.DIFF_DELETE = 'remove'
+        // DiffMatchPatch.DIFF_INSERT = 'insert'
+        // DiffMatchPatch.DIFF_EQUAL = undefined;
+
+        // const dmp = new DiffMatchPatch()
+
+        // const diff = dmp.diff_main('dogs bark', 'cats bark')
 
         editor.setOptions({
             enableBasicAutocompletion: true,
@@ -33,7 +45,41 @@ export default {
 
         editor.setTheme('ace/theme/monokai')
         editor.session.setMode('ace/mode/javascript')
+
+        editor.session.on('change', function(text) {
+            let e = editor
+            this.text = text
+
+            // e.session.insert(t.start, t.lines.join('\n'))
+            // e.session.remove(
+            //     new Range(
+            //         text.start.row,
+            //         text.start.column,
+            //         text.end.row,
+            //         text.end.column
+            //     )
+            // )
+        })
+
+        editor.session.on('tokenizerUpdate', (a, editor) => {
+            // code has been parsed and annotations (warnings/errors) have been introduced
+            if (
+                editor.session &&
+                editor.session.getAnnotations().length === 0
+            ) {
+                this.$root.$emit('editor:code-change', {
+                    getText: () => editor.session.getValue(),
+                })
+            }
+        })
+
+        // editor.session.on('changeAnnotation', function(a, b) {
+        //     console.log('changeAnnotation')
+        // })
     },
+    data: () => ({
+        text: '',
+    }),
 }
 </script>
 <style scoped>

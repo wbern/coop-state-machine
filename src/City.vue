@@ -47,8 +47,6 @@
 <script>
 import BuildingBlock from './components/BuildingBlock'
 
-import { runScript } from './runner'
-
 export default {
     name: 'City',
     components: { 'building-block': BuildingBlock },
@@ -423,7 +421,6 @@ export default {
     },
     mounted() {
         window.VueComponent = this
-        window.runScript = runScript;
     },
 }
 </script>

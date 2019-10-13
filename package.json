@@ -11,9 +11,6 @@
     "test": "vue-cli-service test:unit"
   },
   "devDependencies": {
-    "core-js": "^2.6.5",
-    "keen-ui": "^1.2.0",
-    "vue": "^2.6.10",
     "@babel/core": "^7.6.2",
     "@storybook/addon-actions": "^5.2.1",
     "@storybook/addon-knobs": "^5.2.1",
@@ -32,12 +29,16 @@
     "babel-loader": "^8.0.6",
     "babel-plugin-transform-es2015-modules-commonjs": "^6.26.2",
     "babel-preset-vue": "^2.0.2",
+    "core-js": "^2.6.5",
+    "diff-match-patch": "^1.0.4",
     "eslint": "^5.16.0",
     "eslint-plugin-vue": "^5.0.0",
     "jest": "^24.9.0",
     "jest-serializer-vue": "^0.2.0",
+    "keen-ui": "^1.2.0",
     "monaco-editor": "^0.18.1",
     "raw-loader": "^3.1.0",
+    "vue": "^2.6.10",
     "vue-jest": "^3.0.5",
     "vue-template-compiler": "^2.6.10"
   },
