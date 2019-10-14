@@ -1,3 +1,5 @@
+"use strict";
+
 // this code is isolated inside an iframe
 let workerManagers = []
 let currentTick = 0
