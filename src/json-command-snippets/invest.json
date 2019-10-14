@@ -1,0 +1,4 @@
+{
+    "$schema": "../webworker.command.schema.json",
+    "type": "invest"
+}

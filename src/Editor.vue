@@ -15,10 +15,20 @@ import City from './City'
 // import ace from 'ace-builds/src-min-noconflict/ace'
 import ace from 'ace-builds'
 import { Range, EditSession } from 'ace-builds'
+import snippetManager from 'ace-builds/src-noconflict/ext-language_tools'
 import 'ace-builds/src-noconflict/ext-language_tools'
 import 'ace-builds/src-noconflict/mode-javascript'
 import 'ace-builds/webpack-resolver'
+
+import {
+    registerSnippets,
+    createSnippets,
+} from './ace-snippets-extension'
 // import DiffMatchPatch from 'diff-match-patch'
+
+import build from './json-command-snippets/build.json'
+import invest from './json-command-snippets/invest.json'
+import move from './json-command-snippets/move.json'
 
 // import ace from 'ace-builds/src/mode-javascript'
 // import '!file-loader!ace-builds/src/'
@@ -45,6 +55,22 @@ export default {
 
         editor.setTheme('ace/theme/monokai')
         editor.session.setMode('ace/mode/javascript')
+
+        // set up snippets
+        delete build.$schema;
+        delete invest.$schema;
+        delete move.$schema;
+
+        registerSnippets(
+            editor,
+            editor.session,
+            'javascript',
+            createSnippets([
+                { name: 'build', code: JSON.stringify(build, undefined, 4) },
+                { name: 'invest', code: JSON.stringify(invest, undefined, 4) },
+                { name: 'move', code: JSON.stringify(move, undefined, 4) },
+            ])
+        )
 
         editor.session.on('change', function(text) {
             let e = editor
