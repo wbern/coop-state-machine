@@ -1,14 +1,12 @@
 import sandbox from './sandbox'
 import Ajv from 'ajv'
-import schema from './webworker.command.schema.json'
+import schema from './webworker.action.schema.json'
 
-let b = Ajv
-let a = schema
 const ajv = new Ajv({ allErrors: true })
 const validateWebWorkerCommand = ajv.compile(schema)
 
 const invalidCommandObject = {
-    type: 'invalid-command',
+    type: 'invalid-action',
 }
 
 export const runnerService = new (function() {

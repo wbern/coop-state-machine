@@ -1,35 +1,34 @@
 // this code is isolated by a sandboxed iframe, as well as a web worker
 self.onmessage = function(event) {
     if (event.data && event.data.topic === 'tick') {
-        const fn = function(data) {
+        const userFnWrapper = function(data) {
             // shadow some variables so they can't be accessed by user code
             const self = undefined
             const event = undefined
-
-            // data is available via "this"
-            let out = 'noop';
+            const userFnWrapper = undefined
+            const userFnOut = undefined
 
             let userFn = 'USER_CODE'
 
-            return userFn(data);
+            return userFn(data)
         }
 
-        let out = 'noop'
+        let userFnOut = { type: 'skip' }
 
         try {
             const filteredData = { ...event.data }
             delete filteredData.topic
 
-            out = new fn(filteredData) || 'noop';
+            userFnOut = new userFnWrapper().constructor(filteredData) || 'noop'
         } catch (e) {
-            out = { type: 'worker-error', error: e.toString() }
+            userFnOut = { type: 'worker-error', error: e.toString() }
         }
 
         self.postMessage(
             JSON.stringify({
                 topic: 'tick-ack',
                 id: event.data.id,
-                ackData: out,
+                ackData: userFnOut,
             })
         )
     }

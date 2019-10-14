@@ -1,0 +1,11 @@
+{
+    "type": "object",
+    "properties": {
+        "action": {
+            "action": "string",
+            "enum": ["build", "invest", "move", "skip"]
+        }
+    },
+    "required": ["action"],
+    "additionalProperties": true
+}

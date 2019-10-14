@@ -1,4 +1,0 @@
-{
-    "$schema": "../webworker.command.schema.json",
-    "type": "build"
-}

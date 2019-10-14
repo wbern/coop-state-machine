@@ -36,7 +36,7 @@ const createWorkerManager = (name, initialWorkerCode = undefined) => {
                     return
                 }
 
-                // got a command
+                // got an action
                 switch (parsedData.topic) {
                     case 'noop':
                         console.log('action by inaction')
@@ -142,7 +142,6 @@ const messageHandler = event => {
             workerManagers[currentTick].tick().then(response => {
                 currentTick++
 
-                debugger
                 if (getWorkersLeftToTick() === 0) {
                     currentTick = 0
                 }
@@ -169,8 +168,6 @@ const messageHandler = event => {
             if (messageHandler) {
                 window.removeEventListener('message', messageHandler)
             }
-
-            debugger
 
             window.parent.postMessage(
                 { topic: 'close-ack', id: event.data.id },

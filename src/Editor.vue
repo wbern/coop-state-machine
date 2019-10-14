@@ -23,9 +23,10 @@ import 'ace-builds/webpack-resolver'
 import { registerSnippets, createSnippets } from './ace-snippets-extension'
 // import DiffMatchPatch from 'diff-match-patch'
 
-import build from './json-command-snippets/build.json'
-import invest from './json-command-snippets/invest.json'
-import move from './json-command-snippets/move.json'
+import build from './json-snippets/build.json'
+import invest from './json-snippets/invest.json'
+import move from './json-snippets/move.json'
+import skip from './json-snippets/skip.json'
 
 // import ace from 'ace-builds/src/mode-javascript'
 // import '!file-loader!ace-builds/src/'
@@ -36,7 +37,7 @@ export default {
             type: String,
             default: () => `function(data) {
     // Hi there! Want to get started?
-    // Focus this editor, press \`Ctrl + Space\` and type "command" to get suggestions.
+    // Focus this editor, press \`Ctrl + Space\` and type "action" to get suggestions.
     
     
     
@@ -178,6 +179,7 @@ export default {
         delete build.$schema
         delete invest.$schema
         delete move.$schema
+        delete skip.$schema
 
         registerSnippets(
             editor,
@@ -185,16 +187,20 @@ export default {
             'javascript',
             createSnippets([
                 {
-                    name: 'command: build',
+                    name: 'action: build',
                     code: 'return ' + JSON.stringify(build, undefined, 4),
                 },
                 {
-                    name: 'command: invest',
+                    name: 'action: invest',
                     code: 'return ' + JSON.stringify(invest, undefined, 4),
                 },
                 {
-                    name: 'command: move',
+                    name: 'action: move',
                     code: 'return ' + JSON.stringify(move, undefined, 4),
+                },
+                {
+                    name: 'action: skip',
+                    code: 'return ' + JSON.stringify(skip, undefined, 4),
                 },
             ])
         )
