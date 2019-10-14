@@ -1,3 +1,6 @@
+const TIMEOUT = 2000
+const TIMEOUT_DEBUG = 100000000
+
 export const getUniqueId = () =>
     window.crypto.getRandomValues(new Uint32Array(1))[0]
 
@@ -24,7 +27,7 @@ export const postMessageWait = (
         let isWebWorker = false
 
         try {
-            isWebWorker = !!target.onmessage
+            isWebWorker = target.constructor.name === 'Worker'
         } catch (e) {
             // not a webworker anyway if this caused cross-origin errors
         }
@@ -78,8 +81,8 @@ export const postMessageWait = (
         setTimeoutId = setTimeout(() => {
             console.warn(
                 'message was not acknowledged within ' + options.timeout ||
-                    2000 + 'ms.'
+                    TIMEOUT_DEBUG + 'ms.'
             )
             cleanUpAndExit(null)
-        }, options.timeout || 2000)
+        }, options.timeout || TIMEOUT_DEBUG)
     })

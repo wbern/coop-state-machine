@@ -96,7 +96,7 @@ export const createStore = Vue => {
                 state.worldCoords = createWorldCoords(payload)
             },
             setWorldCoords(state, payload) {
-                let wc = this.$store.state.worldCoords
+                let wc = this.state.worldCoords
                 let c = payload.coords
 
                 if (c.y - (c.z || 0) < 0) {

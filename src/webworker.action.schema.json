@@ -2,7 +2,7 @@
     "type": "object",
     "properties": {
         "action": {
-            "action": "string",
+            "type": "string",
             "enum": ["build", "invest", "move", "skip"]
         }
     },

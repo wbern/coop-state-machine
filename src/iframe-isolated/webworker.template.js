@@ -10,18 +10,22 @@ self.onmessage = function(event) {
 
             let userFn = 'USER_CODE'
 
-            return userFn(data)
+            let result = userFn(data)
+            if (Object.getOwnPropertyNames(result || {}).length > 0) {
+                return result
+            }
+            return { action: 'skip' }
         }
 
-        let userFnOut = { type: 'skip' }
+        let userFnOut
 
         try {
             const filteredData = { ...event.data }
             delete filteredData.topic
 
-            userFnOut = new userFnWrapper().constructor(filteredData) || 'noop'
+            userFnOut = new userFnWrapper(filteredData)
         } catch (e) {
-            userFnOut = { type: 'worker-error', error: e.toString() }
+            userFnOut = { action: 'worker-error', error: e.toString() }
         }
 
         self.postMessage(

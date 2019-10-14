@@ -224,7 +224,15 @@ export default {
             // code has been parsed and annotations (warnings/errors) have been introduced
             if (
                 editor.session &&
-                editor.session.getAnnotations().length === 0
+                editor.session
+                    .getAnnotations()
+                    // Filter away annoying non-line specific warnings like "ES5 option is now set per default"
+                    .filter(
+                        a =>
+                            a.column !== -1 &&
+                            a.row !== -1 &&
+                            a.type !== 'warning'
+                    ).length === 0
             ) {
                 this.$emit('code-change', {
                     getText: () => editor.session.getValue(),

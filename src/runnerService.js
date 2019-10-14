@@ -3,10 +3,10 @@ import Ajv from 'ajv'
 import schema from './webworker.action.schema.json'
 
 const ajv = new Ajv({ allErrors: true })
-const validateWebWorkerCommand = ajv.compile(schema)
+const validateWebWorkerAction = ajv.compile(schema)
 
 const invalidCommandObject = {
-    type: 'invalid-action',
+    type: 'error',
 }
 
 export const runnerService = new (function() {
@@ -22,25 +22,31 @@ export const runnerService = new (function() {
     }
 
     this.tick = function(initialState = {}, modifyStateCallback = undefined) {
-        let tickOneWorkerUntilAllTicked = state =>
+        let tickOneWorkerUntilAllTicked = lastKnownState =>
             sandbox
-                .postMessageWait('tick-one-worker')
-                .then(cmd => {
-                    if (!validateWebWorkerCommand(cmd)) {
-                        cmd = { ...invalidCommandObject }
+                .postMessageWait('tick-one-worker', lastKnownState)
+                .then(ackData => {
+                    if (!validateWebWorkerAction(ackData.response)) {
+                        ackData = {
+                            ...invalidCommandObject,
+                            message:
+                                "action '" +
+                                ackData.response.action +
+                                "' does not exist.",
+                        }
                     }
 
                     // here is where we handle the response data in some way
                     let nextState = modifyStateCallback
-                        ? modifyStateCallback(state, cmd)
+                        ? modifyStateCallback(ackData.response, lastKnownState)
                         : // state updates not connected
                           {}
 
                     let continuer = _state => {
-                        if (cmd.allWorkersTicked === true) {
+                        if (ackData.allWorkersTicked === true) {
                             // all done
                             return true
-                        } else if (cmd.allWorkersTicked === false) {
+                        } else if (ackData.allWorkersTicked === false) {
                             return tickOneWorkerUntilAllTicked(_state)
                         }
                     }
@@ -54,6 +60,7 @@ export const runnerService = new (function() {
                     }
                 })
 
+        debugger
         return tickOneWorkerUntilAllTicked(initialState)
     }
 

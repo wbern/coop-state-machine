@@ -1,5 +1,8 @@
 "use strict";
 
+const TIMEOUT = 2000
+const TIMEOUT_DEBUG = 100000000
+
 // this code is isolated inside an iframe
 let workerManagers = []
 let currentTick = 0
@@ -52,10 +55,13 @@ const createWorkerManager = (name, initialWorkerCode = undefined) => {
                 // window.postMessage(event.data, '*')
             }
 
-            this.tick = (state, timeout = 2000) =>
-                postMessageWait(worker, { topic: 'tick', state }, undefined, {
+            this.tick = (state, timeout = TIMEOUT_DEBUG) => {
+                return postMessageWait(worker, { topic: 'tick', state }, undefined, {
                     timeout,
-                }).then(response => response.ackData)
+                }).then(response => {
+                    return response.ackData
+                })
+            }
             this.postMessage = function() {
                 console.warn('Did you mean to use postMessageWait?')
                 return worker.postMessage.apply(worker, arguments)
@@ -94,7 +100,7 @@ const messageHandler = event => {
             )
 
             onceWorkerManager
-                .tick(event.data.state, event.data.timeout || 2000)
+                .tick(event.data.state, event.data.timeout || TIMEOUT_DEBUG)
                 .then(result => {
                     onceWorkerManager.terminate()
 
@@ -139,7 +145,8 @@ const messageHandler = event => {
             const getWorkersLeftToTick = () =>
                 workerManagers.length - currentTick
 
-            workerManagers[currentTick].tick().then(response => {
+                debugger;
+            workerManagers[currentTick].tick(event.data).then(response => {
                 currentTick++
 
                 if (getWorkersLeftToTick() === 0) {
@@ -216,7 +223,7 @@ const postMessageWait = (target, message, postMessageOptions, options = {}) =>
         let isWebWorker = false
 
         try {
-            isWebWorker = !!target.onmessage
+            isWebWorker = target.constructor.name === 'Worker'
         } catch (e) {
             // not a webworker anyway if this caused cross-origin errors
         }
@@ -270,10 +277,10 @@ const postMessageWait = (target, message, postMessageOptions, options = {}) =>
         setTimeoutId = setTimeout(() => {
             console.warn(
                 'message was not acknowledged within ' + options.timeout ||
-                    2000 + 'ms.'
+                    TIMEOUT_DEBUG + 'ms.'
             )
             cleanUpAndExit(null)
-        }, options.timeout || 2000)
+        }, options.timeout || TIMEOUT_DEBUG)
     })
 
 // signal that it's loaded so we can start receiving commands

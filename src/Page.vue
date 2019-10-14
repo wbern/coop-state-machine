@@ -23,7 +23,7 @@
             >
                 <ui-icon :icon="tab.icon" slot="icon"></ui-icon>
                 <!-- {{ tab.title }} -->
-                <Editor @code-change="onCodeChange($event, tab.id)"></Editor>
+                <Editor v-if="tab.id === 'tab1'" @code-change="onCodeChange($event, tab.id)"></Editor>
             </ui-tab>
         </ui-tabs>
     </div>
@@ -35,6 +35,7 @@ import Output from './Output'
 import Controls from './Controls'
 
 import runnerService from './runnerService'
+import gameService from './gameService'
 
 import { UiAlert, UiButton, UiTabs, UiTab, UiIcon } from 'keen-ui'
 
@@ -68,20 +69,28 @@ export default {
     // },
     methods: {
         onStartOverRequest() {
-            this.$store.commit('emptyState');
+            this.$store.commit('emptyState')
 
-            runnerService.clear();
+            runnerService.clear()
         },
         onTickRequest() {
             let lastKnownState
 
             runnerService
-                .tick({ abc: 1 }, (state, data) => {
-                    lastKnownState = { abc: state.abc + 1 }
+                .tick(gameService.getGameState(this.$store), (action, lastKnownState) => {
+                    lastKnownState = gameService.processAction(
+                        action,
+                        this.$store
+                    )
                     return lastKnownState
                 })
                 .then(a => {
-                    debugger
+                    // we just ticked one step forward
+                    console.log('ticked successfully')
+                })
+                .catch(e => {
+                    console.warn('failed to tick')
+                    throw e
                 })
         },
         onCodeChange(event, id) {
