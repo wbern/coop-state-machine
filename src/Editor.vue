@@ -146,7 +146,7 @@ export default {
 
                             // Custom Globals
                             globals: {
-                                bla: true,
+                                // something: true,
                             }, // additional predefined global variables
                         },
                     ])
