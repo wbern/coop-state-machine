@@ -29,8 +29,6 @@ export const postMessageWait = (
             // not a webworker anyway if this caused cross-origin errors
         }
 
-        let closeHandler
-
         if (!topicObject) {
             message = { topic: message }
         }
@@ -47,7 +45,7 @@ export const postMessageWait = (
             if (isWebWorker) {
                 target.onmessage = undefined
             } else {
-                window.removeEventListener('message', closeHandler)
+                window.removeEventListener('message', onMessage)
             }
 
             resolve(data)
@@ -72,7 +70,7 @@ export const postMessageWait = (
         if (isWebWorker) {
             target.onmessage = onMessage
         } else {
-            closeHandler = window.addEventListener('message', onMessage)
+            window.addEventListener('message', onMessage)
         }
 
         target.postMessage(message, postMessageOptions)

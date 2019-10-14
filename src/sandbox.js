@@ -2,12 +2,15 @@ import IFRAME_HTML from '!raw-loader!./iframe-isolated/iframe.html'
 import IFRAME_CODE from '!raw-loader!./iframe-isolated/iframe.template.js'
 import IFRAME_WEBWORKER_CODE from '!raw-loader!./iframe-isolated/webworker.template.js'
 
-import { postMessageWait } from './postMessageBroker'
+import { postMessageWait, getUniqueId } from './postMessageBroker'
 
 // const iframeTopics = {
 //     close: 'close',
 //     'close-webworkers': 'close-webworkers',
 // }
+
+const messageHandlers = {}
+window.listeners = messageHandlers
 
 export const sandbox = new (function() {
     const TIMEOUT = 2000
@@ -25,8 +28,12 @@ export const sandbox = new (function() {
                 'close',
                 { targetOrigin: '*' },
                 { timeout }
-            ).then(() => runnerIframe.remove())
+            ).then(() => {
+                runnerIframe.remove()
+                console.log('sandbox iframe removal: removed')
+            })
         } else {
+            console.log('sandbox iframe removal: did not exist')
             return new Promise(resolve => resolve(false))
         }
     }
@@ -65,40 +72,48 @@ export const sandbox = new (function() {
                         '/* IFRAME_WEBWORKER_CODE */',
                         IFRAME_WEBWORKER_CODE
                     )
-                    // .replace(
-                    //     '/* DATA_CODE */',
-                    //     "...JSON.parse('" + JSON.stringify(data) + "')\n"
-                    // )
-                    // .replace('/* USER_CODE */', code)
 
                     iframe.src =
                         'data:text/html;charset=utf-8,' + encodeURI(iframeHtml)
 
                     let timeoutId
-                    let loadListener = window.addEventListener(
-                        'message',
-                        event => {
-                            if (event.data.topic === 'iframe-loaded') {
-                                if (timeoutId) {
-                                    clearTimeout(timeoutId)
-                                }
-
-                                window.removeEventListener(
-                                    'message',
-                                    loadListener
-                                )
-
-                                resolve(iframe)
+                    let uniqueId = getUniqueId()
+                    let messageHandler = event => {
+                        if (event.data.topic === 'iframe-loaded') {
+                            if (timeoutId) {
+                                clearTimeout(timeoutId)
                             }
-                        },
+
+                            window.removeEventListener(
+                                'message',
+                                messageHandlers[uniqueId]
+                            )
+                            delete messageHandlers[uniqueId]
+
+                            console.log(
+                                'sandbox iframe creation: created and loaded'
+                            )
+
+                            resolve(iframe)
+                        }
+                    }
+                    window.addEventListener(
+                        'message',
+                        messageHandler,
                         false
                     )
+
+                    messageHandlers[uniqueId] = messageHandler;
 
                     document.body.appendChild(iframe)
 
                     setTimeout(() => {
-                        this.killSandbox()
-                        reject(new Error('iframe failed to initialize'))
+                        this.killSandbox().then(() => {
+                            console.log(
+                                'sandbox iframe creation: created and killed, failed to load'
+                            )
+                            reject(new Error('iframe failed to initialize'))
+                        })
                     }, TIMEOUT_DEBUG)
                 } catch (e) {
                     reject(e)
@@ -170,5 +185,5 @@ export const sandbox = new (function() {
     }
 })()
 
-window.sandbox = sandbox;
+window.sandbox = sandbox
 export default sandbox

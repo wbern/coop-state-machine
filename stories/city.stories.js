@@ -2,7 +2,10 @@ import { withKnobs, number, boolean } from '@storybook/addon-knobs'
 import { storiesOf, addDecorator } from '@storybook/vue'
 import { linkTo } from '@storybook/addon-links'
 
+import { createStore } from '../src/vuex-bootstrapper'
 import City from '../src/City'
+
+const store = createStore()
 
 export default {
     title: 'City',
@@ -11,6 +14,7 @@ export default {
 addDecorator(withKnobs)
 
 export const city = () => ({
+    store,
     props: {
         showImages: {
             type: Boolean,

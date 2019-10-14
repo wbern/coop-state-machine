@@ -64,10 +64,16 @@ export default {
     // },
     methods: {
         onTickRequest() {
-            runnerService.tick()
+            let fun;
+            runnerService.tick({ abc: 1 }, (state, data) => {
+                fun = { abc: state.abc + 1 };
+                return fun;
+            }).then((a) => {
+                debugger;
+            })
         },
         onCodeChange(event, id) {
-            runnerService.setup(id, event.getText())
+            runnerService.setCode(id, event.getText())
             this.canTick = true;
             this.$forceUpdate();
         },

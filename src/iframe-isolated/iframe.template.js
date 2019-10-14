@@ -53,7 +53,7 @@ const createWorkerManager = (name, initialWorkerCode = undefined) => {
             this.tick = (state, timeout = 2000) =>
                 postMessageWait(worker, { topic: 'tick', state }, undefined, {
                     timeout,
-                })
+                }).then(response => response.ackData)
             this.postMessage = function() {
                 console.warn('Did you mean to use postMessageWait?')
                 return worker.postMessage.apply(worker, arguments)
@@ -79,7 +79,7 @@ const createWorkerManager = (name, initialWorkerCode = undefined) => {
     })()
 }
 
-window.addEventListener('message', event => {
+const messageHandler = event => {
     console.log('iframe received message: ', (event || {}).data)
 
     switch (event.data.topic) {
@@ -100,7 +100,7 @@ window.addEventListener('message', event => {
                         {
                             topic: 'add-webworker-once-ack',
                             id: event.data.id,
-                            ackData: result ? result.ackData : null,
+                            ackData: result,
                         },
                         { targetOrigin: '*' }
                     )
@@ -108,11 +108,12 @@ window.addEventListener('message', event => {
 
             break
         case 'add-or-update-webworker':
+            // old blobs will not go away if you update
+            // web workers via this method, so better create
+            // a new iframe if you are frequently updating
             let workerManagerByName = workerManagers.find(
                 workerManager => workerManager.name === event.data.name
             )
-
-            debugger;
 
             if (workerManagerByName) {
                 // worker exists
@@ -136,9 +137,10 @@ window.addEventListener('message', event => {
             const getWorkersLeftToTick = () =>
                 workerManagers.length - currentTick
 
-            workerManagers[currentTick].tick().then(() => {
+            workerManagers[currentTick].tick().then(response => {
                 currentTick++
 
+                debugger
                 if (getWorkersLeftToTick() === 0) {
                     currentTick = 0
                 }
@@ -148,6 +150,7 @@ window.addEventListener('message', event => {
                         topic: 'tick-one-worker-ack',
                         id: event.data.id,
                         allWorkersTicked: currentTick === 0,
+                        response,
                     },
                     { targetOrigin: '*' }
                 )
@@ -160,6 +163,13 @@ window.addEventListener('message', event => {
                 workerManager.terminate()
                 return false
             })
+
+            if (messageHandler) {
+                window.removeEventListener('message', messageHandler)
+            }
+
+            debugger
+
             window.parent.postMessage(
                 { topic: 'close-ack', id: event.data.id },
                 { targetOrigin: '*' }
@@ -170,6 +180,11 @@ window.addEventListener('message', event => {
                 worker.terminate()
                 return false
             })
+
+            if (messageHandler) {
+                window.removeEventListener('message', messageHandler)
+            }
+
             window.parent.postMessage(
                 { topic: 'close-webworkers-ack', id: event.data.id },
                 { targetOrigin: '*' }
@@ -179,7 +194,8 @@ window.addEventListener('message', event => {
             console.warn('topic not implemented: ' + event.data.topic)
             break
     }
-})
+}
+window.addEventListener('message', messageHandler)
 
 const getUniqueId = () => window.crypto.getRandomValues(new Uint32Array(1))[0]
 
@@ -206,8 +222,6 @@ const postMessageWait = (target, message, postMessageOptions, options = {}) =>
             // not a webworker anyway if this caused cross-origin errors
         }
 
-        let closeHandler
-
         if (!topicObject) {
             message = { topic: message }
         }
@@ -224,13 +238,13 @@ const postMessageWait = (target, message, postMessageOptions, options = {}) =>
             if (isWebWorker) {
                 target.onmessage = undefined
             } else {
-                window.removeEventListener('message', closeHandler)
+                window.removeEventListener('message', handler)
             }
 
             resolve(data)
         }
 
-        let onMessage = event => {
+        let handler = event => {
             let data = event.data
 
             if (typeof data === 'string') {
@@ -247,9 +261,9 @@ const postMessageWait = (target, message, postMessageOptions, options = {}) =>
         }
 
         if (isWebWorker) {
-            target.onmessage = onMessage
+            target.onmessage = handler
         } else {
-            closeHandler = window.addEventListener('message', onMessage)
+            window.addEventListener('message', handler)
         }
 
         target.postMessage(message, postMessageOptions)

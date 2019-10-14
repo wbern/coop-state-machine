@@ -1,21 +1,12 @@
 // this code is isolated by a sandboxed iframe, as well as a web worker
 self.onmessage = function(event) {
     if (event.data && event.data.topic === 'tick') {
-        let fn = function(data) {
-            const state = {};
-
-            if (
-                event.data.state &&
-                typeof event.data.state === 'object' &&
-                event.data.state !== null &&
-                Object.keys(event.data.state).length > 0
-            ) {
-                state = event.data.state;
-            }
-
+        const fn = function() {
             // shadow some variables so they can't be accessed by user code
-            const self = undefined;
-            const event = undefined;
+            const self = undefined
+            const event = undefined
+
+            // data is available via "this"
 
             /* USER_CODE */
 
@@ -26,11 +17,20 @@ self.onmessage = function(event) {
         let out = 'noop'
 
         try {
-            out = new fn(event.data)
+            const dataToBind = { ...event.data }
+            delete dataToBind.topic
+
+            out = fn.call(dataToBind)
         } catch (e) {
-            out = 'choke'
+            out = { type: 'worker-error', error: e.toString() }
         }
 
-        self.postMessage(JSON.stringify({ topic: 'tick-ack', id: event.data.id, ackData: out }))
+        self.postMessage(
+            JSON.stringify({
+                topic: 'tick-ack',
+                id: event.data.id,
+                ackData: out,
+            })
+        )
     }
 }
