@@ -1,6 +1,6 @@
 <template>
     <div class="wrapper">
-        <div id="editor" ref="editor"></div>
+        <div id="editor" ref="editor">{{ defaultText }}</div>
     </div>
 </template>
 <script>
@@ -31,7 +31,22 @@ import move from './json-command-snippets/move.json'
 // import '!file-loader!ace-builds/src/'
 
 export default {
+    props: {
+        defaultText: {
+            type: String,
+            default: () => `function(data) {
+    // Hi there! Want to get started?
+    // Focus this editor, press \`Ctrl + Space\` and type "command" to get suggestions.
+    
+    
+    
+    // When you're done, try the play controls under the game view
+}`,
+        },
+    },
     mounted() {
+        // this.$refs.
+
         const editor = ace.edit(this.$refs.editor)
 
         // Use this later for networking
@@ -57,6 +72,9 @@ export default {
                 if (!!session.$worker) {
                     session.$worker.send('setOptions', [
                         {
+                            // Disables "Missing name in function declaration.",
+                            '-W025': false,
+
                             // JSHint Default Configuration File (as on JSHint website)
                             // See http://jshint.com/docs/ for more details
 
@@ -83,7 +101,7 @@ export default {
                             //   "single" : require single quotes
                             //   "double" : require double quotes
                             undef: true, // true: Require all non-global variables to be declared (prevents global leaks)
-                            unused: true, // Unused variables:
+                            unused: false, // Unused variables:
                             //   true     : all variables, last function parameter
                             //   "vars"   : all variables only
                             //   "strict" : all variables, all function parameters
@@ -96,7 +114,7 @@ export default {
                             varstmt: false, // true: Disallow any var statements. Only `let` and `const` are allowed.
 
                             // Relaxing
-                            asi: false, // true: Tolerate Automatic Semicolon Insertion (no semicolons)
+                            asi: true, // true: Tolerate Automatic Semicolon Insertion (no semicolons)
                             boss: false, // true: Tolerate assignments where comparisons would be expected
                             debug: false, // true: Allow debugger statements e.g. browser breakpoints.
                             eqnull: false, // true: Tolerate use of `== null`
@@ -166,9 +184,18 @@ export default {
             editor.session,
             'javascript',
             createSnippets([
-                { name: 'build', code: JSON.stringify(build, undefined, 4) },
-                { name: 'invest', code: JSON.stringify(invest, undefined, 4) },
-                { name: 'move', code: JSON.stringify(move, undefined, 4) },
+                {
+                    name: 'command: build',
+                    code: 'return ' + JSON.stringify(build, undefined, 4),
+                },
+                {
+                    name: 'command: invest',
+                    code: 'return ' + JSON.stringify(invest, undefined, 4),
+                },
+                {
+                    name: 'command: move',
+                    code: 'return ' + JSON.stringify(move, undefined, 4),
+                },
             ])
         )
 

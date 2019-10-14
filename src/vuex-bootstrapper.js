@@ -99,7 +99,7 @@ export const createStore = Vue => {
                 let wc = this.$store.state.worldCoords
                 let c = payload.coords
 
-                if (coords.y - (coords.z || 0) < 0) {
+                if (c.y - (c.z || 0) < 0) {
                     throw new Error(
                         'cannot break the positive 3D dimensions, sorry'
                     )

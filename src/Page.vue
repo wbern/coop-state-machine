@@ -3,7 +3,11 @@
         <div class="left-wrapper">
             <City></City>
             <div class="city-controls">
-                <Controls :can-tick="canTick" @tick-request="onTickRequest"></Controls>
+                <Controls
+                    :can-tick="canTick"
+                    @start-over-request="onStartOverRequest"
+                    @tick-request="onTickRequest"
+                ></Controls>
             </div>
             <div class="output-window">
                 <Output></Output>
@@ -63,19 +67,27 @@ export default {
     //     },
     // },
     methods: {
+        onStartOverRequest() {
+            this.$store.commit('emptyState');
+
+            runnerService.clear();
+        },
         onTickRequest() {
-            let fun;
-            runnerService.tick({ abc: 1 }, (state, data) => {
-                fun = { abc: state.abc + 1 };
-                return fun;
-            }).then((a) => {
-                debugger;
-            })
+            let lastKnownState
+
+            runnerService
+                .tick({ abc: 1 }, (state, data) => {
+                    lastKnownState = { abc: state.abc + 1 }
+                    return lastKnownState
+                })
+                .then(a => {
+                    debugger
+                })
         },
         onCodeChange(event, id) {
             runnerService.setCode(id, event.getText())
-            this.canTick = true;
-            this.$forceUpdate();
+            this.canTick = true
+            this.$forceUpdate()
         },
     },
 }

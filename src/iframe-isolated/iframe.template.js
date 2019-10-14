@@ -16,7 +16,7 @@ const createWorkerManager = (name, initialWorkerCode = undefined) => {
         this.update = workerCode => {
             // generates a worker
             const workerBlob = new Blob(
-                [boilerplateWorkerCode.replace('/* USER_CODE */', workerCode)],
+                [boilerplateWorkerCode.replace(/\/\* USER_CODE \*\/|'USER_CODE'/, workerCode)],
                 {
                     type: 'text/javascript',
                 }

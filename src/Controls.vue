@@ -1,6 +1,13 @@
 <template>
     <div class="city-controls">
         <ui-icon-button
+            @click="onStartOver"
+            :disabled="!canUndo"
+            type="secondary"
+            class="city-controls__icon"
+            icon="settings_backup_restore"
+        ></ui-icon-button>
+        <ui-icon-button
             @click="onBack"
             :disabled="!canUndo"
             type="secondary"
@@ -32,6 +39,9 @@ export default {
         canTick: Boolean,
     },
     methods: {
+        onStartOver() {
+            this.$emit('start-over-request')
+        },
         onBack() {
             this.undo()
         },
@@ -40,10 +50,10 @@ export default {
         },
         onForward() {
             // this should not only be redoing, but also generating the "next step"
-            if(this.canRedo) {
+            if (this.canRedo) {
                 this.redo()
-            } else if(this.canTick) {
-                this.$emit('tick-request');
+            } else if (this.canTick) {
+                this.$emit('tick-request')
             }
         },
     },

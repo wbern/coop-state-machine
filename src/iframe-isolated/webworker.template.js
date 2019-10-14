@@ -1,26 +1,26 @@
 // this code is isolated by a sandboxed iframe, as well as a web worker
 self.onmessage = function(event) {
     if (event.data && event.data.topic === 'tick') {
-        const fn = function() {
+        const fn = function(data) {
             // shadow some variables so they can't be accessed by user code
             const self = undefined
             const event = undefined
 
             // data is available via "this"
+            let out = 'noop';
 
-            /* USER_CODE */
+            let userFn = 'USER_CODE'
 
-            // this will return if the user didn't return anything before that
-            return 'noop'
+            return userFn(data);
         }
 
         let out = 'noop'
 
         try {
-            const dataToBind = { ...event.data }
-            delete dataToBind.topic
+            const filteredData = { ...event.data }
+            delete filteredData.topic
 
-            out = fn.call(dataToBind)
+            out = new fn(filteredData) || 'noop';
         } catch (e) {
             out = { type: 'worker-error', error: e.toString() }
         }
