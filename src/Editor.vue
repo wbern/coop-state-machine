@@ -20,10 +20,7 @@ import 'ace-builds/src-noconflict/ext-language_tools'
 import 'ace-builds/src-noconflict/mode-javascript'
 import 'ace-builds/webpack-resolver'
 
-import {
-    registerSnippets,
-    createSnippets,
-} from './ace-snippets-extension'
+import { registerSnippets, createSnippets } from './ace-snippets-extension'
 // import DiffMatchPatch from 'diff-match-patch'
 
 import build from './json-command-snippets/build.json'
@@ -57,9 +54,9 @@ export default {
         editor.session.setMode('ace/mode/javascript')
 
         // set up snippets
-        delete build.$schema;
-        delete invest.$schema;
-        delete move.$schema;
+        delete build.$schema
+        delete invest.$schema
+        delete move.$schema
 
         registerSnippets(
             editor,
