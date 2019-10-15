@@ -1,0 +1,49 @@
+{
+    "name": "coop-state-machine-backend",
+    "version": "0.1.0",
+    "private": true,
+    "scripts": {
+        "build": ""
+    },
+    "devDependencies": {},
+    "eslintConfig": {
+        "root": true,
+        "env": {
+            "node": true
+        },
+        "extends": [
+            "plugin:vue/essential",
+            "eslint:recommended"
+        ],
+        "rules": {
+            "no-console": "off",
+            "no-unused-vars": "off",
+            "no-case-declarations": "off"
+        },
+        "parserOptions": {
+            "parser": "babel-eslint"
+        },
+        "overrides": [
+            {
+                "files": [
+                    "**/__tests__/*.{j,t}s?(x)"
+                ],
+                "env": {
+                    "jest": true
+                }
+            }
+        ]
+    },
+    "postcss": {
+        "plugins": {
+            "autoprefixer": {}
+        }
+    },
+    "browserslist": [
+        "> 1%",
+        "last 2 versions"
+    ],
+    "dependencies": {
+        "material-design-icons": "^3.0.1"
+    }
+}
