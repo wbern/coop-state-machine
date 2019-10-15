@@ -17,7 +17,7 @@ const createWorldCoords = options => {
         maxSizeX: 12,
         maxSizeY: 12,
         initialFloors: 0,
-        randomizeBuildings: true,
+        randomizeBuildings: false,
     }
 
     let o = { ...defaults, ...options }

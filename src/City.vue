@@ -246,13 +246,13 @@ export default {
             return stackSource.y + stackSource.z
         },
         init() {
-            this.$store.commit('resetWorldCoords', {
+            this.$store.commit('emptyState', {
                 ...this.$props,
             })
         },
     },
     created() {
-        this.init()
+        // this.init()
     },
     data() {
         return {}
