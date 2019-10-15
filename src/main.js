@@ -3,15 +3,14 @@ import 'keen-ui/dist/keen-ui.css'
 
 import Vue from 'vue'
 
-import City from './City.vue'
-import { setup, createStore } from './vuex-bootstrapper'
+import Page from './Page.vue'
+import { createStore } from './vuex-bootstrapper'
 
-setup(Vue)
-const store = createStore()
+const store = createStore(Vue)
 
 Vue.config.productionTip = false
 
 new Vue({
-    render: h => h(City),
+    render: h => h(Page),
     store,
 }).$mount('#app')
