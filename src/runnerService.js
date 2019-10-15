@@ -60,7 +60,6 @@ export const runnerService = new (function() {
                     }
                 })
 
-        debugger
         return tickOneWorkerUntilAllTicked(initialState)
     }
 

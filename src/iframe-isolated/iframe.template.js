@@ -145,8 +145,7 @@ const messageHandler = event => {
             const getWorkersLeftToTick = () =>
                 workerManagers.length - currentTick
 
-                debugger;
-            workerManagers[currentTick].tick(event.data).then(response => {
+                workerManagers[currentTick].tick(event.data).then(response => {
                 currentTick++
 
                 if (getWorkersLeftToTick() === 0) {

@@ -2,14 +2,14 @@
 <template>
     <div id="city" class="grid">
         <div
-            v-for="(undefined, screenX) in $store.state.worldCoords.length - getLowestWorldX()"
+            v-for="(undefined, screenX) in readOnlyWorldCoords.length - getLowestWorldX()"
             :key="screenX"
             class="grid-column"
             :data-screen-x="screenX"
         >
             <div
-                v-for="(cell, screenY) in ($store.state.worldCoords[screenToWorldCoords(screenX).x] || []).length - getLowestWorldY()"
-                :data-len="($store.state.worldCoords[screenToWorldCoords(screenX).x] || []).length"
+                v-for="(cell, screenY) in (readOnlyWorldCoords[screenToWorldCoords(screenX).x] || []).length - getLowestWorldY()"
+                :data-len="(readOnlyWorldCoords[screenToWorldCoords(screenX).x] || []).length"
                 :key="screenY"
                 :data-screen-x="screenX"
                 :data-screen-y="screenY"
@@ -257,7 +257,11 @@ export default {
     data() {
         return {}
     },
-    computed: {},
+    computed: {
+        readOnlyWorldCoords() {
+            return this.$store.state.worldCoords;
+        }
+    },
     props: {
         initialSizeX: {
             type: Number,
