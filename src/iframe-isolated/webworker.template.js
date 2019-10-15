@@ -8,9 +8,13 @@ self.onmessage = function(event) {
             const userFnWrapper = undefined
             const userFnOut = undefined
 
-            let userFn = 'USER_CODE'
+            /* USER_CODE */
 
-            let result = userFn(data)
+            // user must have defined a main method
+
+            // eslint-disable-next-line
+            let result = main(data)
+
             if (Object.getOwnPropertyNames(result || {}).length > 0) {
                 return result
             }

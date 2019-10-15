@@ -1,6 +1,14 @@
 <template>
     <div class="wrapper">
         <div id="editor" ref="editor">{{ defaultText }}</div>
+        <div class="editor-controls">
+            <ui-icon-button
+                @click="onFormatRequest"
+                type="secondary"
+                class="editor-controls__icon"
+                icon="sort_by_alpha"
+            ></ui-icon-button>
+        </div>
     </div>
 </template>
 <script>
@@ -20,6 +28,11 @@ import 'ace-builds/src-noconflict/ext-language_tools'
 import 'ace-builds/src-noconflict/mode-javascript'
 import 'ace-builds/webpack-resolver'
 
+import { UiIconButton } from 'keen-ui'
+
+import prettier from 'prettier/standalone'
+import parserBabylon from 'prettier/parser-babylon'
+
 import { registerSnippets, createSnippets } from './ace-snippets-extension'
 // import DiffMatchPatch from 'diff-match-patch'
 
@@ -32,10 +45,11 @@ import skip from './json-snippets/skip.json'
 // import '!file-loader!ace-builds/src/'
 
 export default {
+    components: { UiIconButton },
     props: {
         defaultText: {
             type: String,
-            default: () => `function(data) {
+            default: () => `function main(gameState) {
     // Hi there! Want to get started?
     // Focus this editor, press \`Ctrl + Space\` and type "action" to get suggestions.
     
@@ -45,10 +59,21 @@ export default {
 }`,
         },
     },
-    mounted() {
-        // this.$refs.
+    methods: {
+        onFormatRequest() {
+            let text = this.ace.editor.session.getValue()
 
-        const editor = ace.edit(this.$refs.editor)
+            debugger
+            let prettified = prettier.format(text, {
+                parser: 'babylon',
+                plugins: [parserBabylon],
+            })
+
+            this.ace.editor.session.setValue(prettified)
+        },
+    },
+    mounted() {
+        this.ace.editor = ace.edit(this.$refs.editor)
 
         // Use this later for networking
         // You can also use the following properties:
@@ -60,15 +85,15 @@ export default {
 
         // const diff = dmp.diff_main('dogs bark', 'cats bark')
 
-        editor.setOptions({
+        this.ace.editor.setOptions({
             enableBasicAutocompletion: true,
             enableSnippets: true,
             enableLiveAutocompletion: false,
         })
 
-        editor.setTheme('ace/theme/monokai')
+        this.ace.editor.setTheme('ace/theme/monokai')
 
-        editor.session.on('changeMode', function(e, session) {
+        this.ace.editor.session.on('changeMode', function(e, session) {
             if ('ace/mode/javascript' === session.getMode().$id) {
                 if (!!session.$worker) {
                     session.$worker.send('setOptions', [
@@ -173,7 +198,7 @@ export default {
             }
         })
 
-        editor.session.setMode('ace/mode/javascript')
+        this.ace.editor.session.setMode('ace/mode/javascript')
 
         // set up snippets
         delete build.$schema
@@ -182,8 +207,8 @@ export default {
         delete skip.$schema
 
         registerSnippets(
-            editor,
-            editor.session,
+            this.ace.editor,
+            this.ace.editor.session,
             'javascript',
             createSnippets([
                 {
@@ -205,8 +230,7 @@ export default {
             ])
         )
 
-        editor.session.on('change', function(text) {
-            let e = editor
+        this.ace.editor.session.on('change', function(text) {
             this.text = text
 
             // e.session.insert(t.start, t.lines.join('\n'))
@@ -220,11 +244,11 @@ export default {
             // )
         })
 
-        editor.session.on('tokenizerUpdate', (a, e) => {
+        this.ace.editor.session.on('tokenizerUpdate', (a, e) => {
             // code has been parsed and annotations (warnings/errors) have been introduced
             if (
-                editor.session &&
-                editor.session
+                this.ace.editor.session &&
+                this.ace.editor.session
                     .getAnnotations()
                     // Filter away annoying non-line specific warnings like "ES5 option is now set per default"
                     .filter(
@@ -235,23 +259,27 @@ export default {
                     ).length === 0
             ) {
                 this.$emit('code-change', {
-                    getText: () => editor.session.getValue(),
+                    getText: () => this.ace.editor.session.getValue(),
                 })
             }
         })
 
-        // editor.session.on('changeAnnotation', function(a, b) {
+        // this.ace.editor.session.on('changeAnnotation', function(a, b) {
         //     console.log('changeAnnotation')
         // })
     },
     data: () => ({
         text: '',
+        ace: {
+            editor: null,
+        },
     }),
 }
 </script>
 <style scoped>
 .wrapper {
     flex: 1;
+    display: flex;
     height: 100%;
     width: 100%;
 }
@@ -259,5 +287,16 @@ export default {
 #editor {
     height: 100%;
     width: 100%;
+}
+
+.editor-controls__icon {
+    margin: 0 4px;
+}
+
+.editor-controls {
+    font-size: 36px;
+    display: flex;
+    justify-content: flex-end;
+    margin: 4px 0;
 }
 </style>
