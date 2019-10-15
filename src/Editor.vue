@@ -63,7 +63,6 @@ export default {
         onFormatRequest() {
             let text = this.ace.editor.session.getValue()
 
-            debugger
             let prettified = prettier.format(text, {
                 parser: 'babylon',
                 plugins: [parserBabylon],
