@@ -45,7 +45,7 @@
 </template>
 
 <script>
-import BuildingBlock from './components/BuildingBlock'
+import BuildingBlock from './components/BuildingBlock.vue'
 
 export default {
     name: 'City',

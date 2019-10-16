@@ -19,7 +19,7 @@
 // import  '!!file-loader!monaco-editor/esm/vs/language/html/html.worker.js';
 // import  '!!file-loader!monaco-editor/esm/vs/language/typescript/ts.worker.js';
 
-import City from './City'
+import City from './City.vue'
 // import ace from 'ace-builds/src-min-noconflict/ace'
 import ace from 'ace-builds'
 import { Range, EditSession } from 'ace-builds'

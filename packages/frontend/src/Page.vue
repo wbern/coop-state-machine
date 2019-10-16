@@ -29,10 +29,10 @@
     </div>
 </template>
 <script>
-import City from './City'
-import Editor from './Editor'
-import Output from './Output'
-import Controls from './Controls'
+import City from './City.vue'
+import Editor from './Editor.vue'
+import Output from './Output.vue'
+import Controls from './Controls.vue'
 
 import runnerService from './runnerService'
 import gameService from './gameService'
