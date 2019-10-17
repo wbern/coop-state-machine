@@ -9,6 +9,7 @@ module.exports = env => {
 
     return {
         mode: 'development',
+        devtool: 'source-map',
         output: {
             // publicPath: env.BASE_URL,
         },
