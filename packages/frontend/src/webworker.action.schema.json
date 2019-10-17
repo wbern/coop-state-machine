@@ -1,11 +1,26 @@
 {
     "type": "object",
+    "additionalProperties": true,
+
+    "required": ["action"],
+
     "properties": {
-        "action": {
-            "type": "string",
-            "enum": ["build", "invest", "move", "skip"]
+        "comment": {
+            "type": "string"
         }
     },
-    "required": ["action"],
-    "additionalProperties": true
+
+    "oneOf": [
+        {
+            "properties": {
+                "action": { "enum": ["build"] }
+            },
+            "required": ["x", "y"]
+        },
+        {
+            "properties": {
+                "action": { "enum": ["skip"] }
+            }
+        }
+    ]
 }

@@ -5,7 +5,9 @@
             <div class="city-controls">
                 <Controls
                     :can-tick="canTick"
-                    @start-over-request="onStartOverRequest"
+                    :current-turn="this.$store.state.currentTurn"
+                    @tick-to-turn-request="onTickToTurnRequest"
+                    @rewind-request="onRewindRequest"
                     @tick-request="onTickRequest"
                 ></Controls>
             </div>
@@ -23,7 +25,10 @@
             >
                 <ui-icon :icon="tab.icon" slot="icon"></ui-icon>
                 <!-- {{ tab.title }} -->
-                <Editor v-if="tab.id === 'tab1'" @code-change="onCodeChange($event, tab.id)"></Editor>
+                <Editor
+                    v-if="tab.id === 'tab1'"
+                    @code-change="onCodeChange($event, tab.id)"
+                ></Editor>
             </ui-tab>
         </ui-tabs>
     </div>
@@ -68,30 +73,14 @@ export default {
     //     },
     // },
     methods: {
-        onStartOverRequest() {
-            this.$store.commit('emptyState')
-
-            runnerService.clear()
+        async onTickToTurnRequest(turnNumber) {
+            await gameService.gotoTurn(this, turnNumber)
         },
-        onTickRequest() {
-            let lastKnownState
-
-            runnerService
-                .tick(gameService.getGameState(this.$store), (action, lastKnownState) => {
-                    lastKnownState = gameService.processAction(
-                        action,
-                        this.$store
-                    )
-                    return lastKnownState
-                })
-                .then(a => {
-                    // we just ticked one step forward
-                    console.log('ticked successfully')
-                })
-                .catch(e => {
-                    console.warn('failed to tick')
-                    throw e
-                })
+        async onRewindRequest() {
+            await gameService.rewindTurn(this)
+        },
+        async onTickRequest() {
+            await gameService.nextTurn(this)
         },
         onCodeChange(event, id) {
             runnerService.setCode(id, event.getText())
@@ -121,7 +110,7 @@ export default {
 }
 .page-wrapper {
     height: 100%;
-    border: 8px solid #DDDDDD;
+    border: 8px solid #dddddd;
     flex: 1;
     display: flex;
     flex-direction: row;

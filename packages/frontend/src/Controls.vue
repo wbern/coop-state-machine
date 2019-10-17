@@ -7,18 +7,25 @@
             class="city-controls__icon"
             icon="restore"
         ></ui-icon-button>
-        <ui-modal ref="skipBackModal" title="Skip back X turns..">
-            Hello! How far do you want to go back?
-            <ui-slider
-                show-marker
+        <ui-modal ref="rewindModal" title="Rewind back to turn..">
+            <ui-textbox
+                label="Turn #"
+                type="number"
                 :min="0"
-                :max="100"
-                :step="5"
-                v-model="skipBackTurnsAmount"
-            ></ui-slider>
-            <ui-button icon="restore" :icon-position="'left'" :size="'normal'"
-                >Go Back</ui-button
-            >
+                :max="currentTurn - 1"
+                v-model.number="rewindToTurnNumber"
+            ></ui-textbox>
+            <ui-button
+                raised
+                class="city-controls__icon city-controls__icon--mirror"
+                type="primary"
+                icon="restore"
+                :disabled="!(rewindToTurnNumber >= 0 && rewindToTurnNumber <= 1000 && rewindToTurnNumber < currentTurn)"
+                :icon-position="'left'"
+                :size="'normal'"
+                @click="onRewindToTurnRequest"
+                >Rewind to this turn
+            </ui-button>
         </ui-modal>
         <ui-icon-button
             @click="onBack"
@@ -47,58 +54,66 @@
             class="city-controls__icon city-controls__icon--mirror"
             icon="restore"
         ></ui-icon-button>
-        <ui-modal ref="skipForwardModal" title="Skip to turn..">
-            Hello! How far do you want to skip?
-            <ui-slider
-                show-marker
-                :min="1"
-                :max="100"
-                :step="5"
-                v-model="skipForwardTurnsAmount"
-            ></ui-slider>
+        <ui-modal ref="forwardModal" title="Skip to turn..">
+            <ui-textbox
+                label="Turn #"
+                type="number"
+                :min="currentTurn + 1"
+                :max="1000"
+                v-model.number="forwardToTurnNumber"
+            ></ui-textbox>
             <ui-button
+                raised
                 class="city-controls__icon city-controls__icon--mirror"
                 icon="restore"
+                type="primary"
+                :disabled="!(forwardToTurnNumber > 0 && forwardToTurnNumber <= 1000 && forwardToTurnNumber > currentTurn)"
                 :icon-position="'left'"
                 :size="'normal'"
-                >Skip Forward
+                @click="onForwardToTurnRequest"
+                >Skip to this turn
             </ui-button>
         </ui-modal>
     </div>
 </template>
 <script>
-import { UiIconButton, UiModal, UiSlider, UiButton } from 'keen-ui'
+import { UiIconButton, UiModal, UiSlider, UiButton, UiTextbox } from 'keen-ui'
 
 export default {
-    components: { UiIconButton, UiModal, UiSlider, UiButton },
+    components: { UiIconButton, UiModal, UiButton, UiTextbox },
     props: {
+        currentTurn: Number,
         canTick: Boolean,
     },
     data: () => ({
-        skipBackTurnsAmount: 10,
-        skipForwardTurnsAmount: 1,
+        rewindToTurnNumber: 0,
+        forwardToTurnNumber: 10,
     }),
     methods: {
+        onRewindToTurnRequest() {
+            this.$emit('tick-to-turn-request', this.rewindToTurnNumber)
+            this.$refs['rewindModal'].close();
+        },
+        onForwardToTurnRequest() {
+            this.$emit('tick-to-turn-request', this.forwardToTurnNumber)
+            this.$refs['forwardModal'].close();
+        },
         onSkipToBack() {
-            this.$refs['skipBackModal'].open()
+            this.$refs['rewindModal'].open()
             // this.$emit('start-over-request')
         },
         onBack() {
-            this.undo()
+            this.$emit('rewind-request')
         },
         onPlay() {
             // play continously
         },
         onSkipToEnd() {
-            this.$refs['skipForwardModal'].open()
+            this.$refs['forwardModal'].open()
         },
         onForward() {
             // this should not only be redoing, but also generating the "next step"
-            if (this.canRedo) {
-                this.redo()
-            } else if (this.canTick) {
-                this.$emit('tick-request')
-            }
+            this.$emit('tick-request')
         },
     },
 }

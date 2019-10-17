@@ -2,10 +2,10 @@ import ImplicitVue from 'vue'
 import Vuex from 'vuex'
 import VuexUndoRedo from 'vuex-undo-redo'
 
-let Vue = ImplicitVue;
+let Vue = ImplicitVue
 
 const setup = _Vue => {
-    Vue = _Vue;
+    Vue = _Vue
     _Vue.use(Vuex)
     _Vue.use(VuexUndoRedo /*, { ignoreMutations: ['toggleGrid'] }*/)
 }
@@ -86,6 +86,7 @@ const createWorldCoords = options => {
 
 export const getDefaultState = () => ({
     worldCoords: createWorldCoords(),
+    currentTurn: 0,
 })
 
 // Make sure to call Vue.use(Vuex) first if using a module system
@@ -95,6 +96,9 @@ export const createStore = _Vue => {
     return new Vuex.Store({
         state: getDefaultState(),
         mutations: {
+            beginNextTurn(state) {
+                state.currentTurn++
+            },
             resetWorldCoords(state, payload) {
                 state.worldCoords = createWorldCoords(payload)
             },
@@ -123,7 +127,7 @@ export const createStore = _Vue => {
                 wc[c.x][c.y][c.z || 0] = payload.data
 
                 // to trigger vue's reactivity
-                Vue.set(this.state.worldCoords, this.state.worldCoords);
+                Vue.set(this.state.worldCoords, this.state.worldCoords)
                 // this.state.worldCoords = [...this.state.worldCoords];
             },
             // needed for undo/redo plugin
