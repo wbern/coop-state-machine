@@ -49,5 +49,9 @@ export default {
 #output {
     height: 100%;
     width: 100%;
+
+
+    border-left: 3px solid#454545;
+    border-bottom: 4px solid#454545;
 }
 </style>

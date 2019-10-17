@@ -286,6 +286,9 @@ export default {
 #editor {
     height: 100%;
     width: 100%;
+
+    border-right: 4px solid#454545;
+    border-bottom: 4px solid#454545;
 }
 
 .editor-controls__icon {

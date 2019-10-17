@@ -4,8 +4,26 @@
         <meta charset="utf-8" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-        <link rel="icon" href="<%= BASE_URL %>favicon.ico" />
         <title>frontend-world</title>
+        <!-- Stuff to make content look ok -->
+        <style>
+            html {
+                margin: 0;
+                height: 100%;
+            }
+
+            body {
+                height: 100%;
+                margin: 0;
+            }
+
+            body > #root {
+                display: flex;
+                height: 100%;
+                justify-content: center;
+                align-content: center;
+            }
+        </style>
         <style>
             *,
             *::before,
@@ -15,13 +33,19 @@
 
             html {
                 font-size: 100%;
+                font-family: 'Roboto', sans-serif;
             }
         </style>
+        <link
+            href="https://fonts.googleapis.com/css?family=Roboto&display=swap"
+            rel="stylesheet"
+        />
         <link
             href="https://fonts.googleapis.com/icon?family=Material+Icons"
             rel="stylesheet"
         />
-        <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
+
+        <!-- End of stuff-->
     </head>
     <body>
         <noscript>

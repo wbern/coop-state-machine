@@ -120,6 +120,8 @@ export default {
     flex-direction: column;
 }
 .page-wrapper {
+    height: 100%;
+    border: 8px solid #DDDDDD;
     flex: 1;
     display: flex;
     flex-direction: row;

@@ -41,34 +41,6 @@
         "html-webpack-plugin": "^3.2.0",
         "webpack-dev-server": "^3.8.2"
     },
-    "eslintConfig": {
-        "root": true,
-        "env": {
-            "node": true
-        },
-        "extends": [
-            "plugin:vue/essential",
-            "eslint:recommended"
-        ],
-        "rules": {
-            "no-console": "off",
-            "no-unused-vars": "off",
-            "no-case-declarations": "off"
-        },
-        "parserOptions": {
-            "parser": "babel-eslint"
-        },
-        "overrides": [
-            {
-                "files": [
-                    "**/__tests__/*.{j,t}s?(x)"
-                ],
-                "env": {
-                    "jest": true
-                }
-            }
-        ]
-    },
     "postcss": {
         "plugins": {
             "autoprefixer": {}
