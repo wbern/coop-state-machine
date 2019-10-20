@@ -1,7 +1,7 @@
 dependencies:
   '@babel/core': 7.6.4
   '@emotion/core': 10.0.21_react@16.10.2
-  '@rush-temp/coop-state-machine-backend': 'file:projects/coop-state-machine-backend.tgz'
+  '@rush-temp/coop-state-machine-backend': 'file:projects/coop-state-machine-backend.tgz_eslint@5.16.0'
   '@rush-temp/coop-state-machine-frontend': 'file:projects/coop-state-machine-frontend.tgz'
   '@rush-temp/coop-state-machine-storybook': 'file:projects/coop-state-machine-storybook.tgz_typescript@3.6.4'
   '@storybook/addon-actions': 5.2.4_react-dom@16.10.2
@@ -23,6 +23,7 @@ dependencies:
   diff-match-patch: 1.0.4
   eslint: 5.16.0
   eslint-plugin-vue: 5.2.3_eslint@5.16.0
+  express: 4.17.1
   file-loader: 4.2.0_webpack@4.41.2
   html-webpack-plugin: 3.2.0_webpack@4.41.2
   jest: 24.9.0
@@ -35,6 +36,7 @@ dependencies:
   react-dom: 16.10.2_react@16.10.2
   typescript: 3.6.4
   vue: 2.6.10
+  vue-eslint-parser: 5.0.0_eslint@5.16.0
   vue-jest: 3.0.5_9235beb11cb2cd2c17b886f42402aca4
   vue-loader: 15.7.1_css-loader@3.2.0+webpack@4.41.2
   vue-style-loader: 4.1.2
@@ -44,6 +46,7 @@ dependencies:
   webpack: 4.41.2_webpack@4.41.2
   webpack-cli: 3.3.9_webpack@4.41.2
   webpack-dev-server: 3.8.2_webpack@4.41.2
+  ws: 7.2.0
 lockfileVersion: 5.1
 packages:
   /@babel/code-frame/7.5.5:
@@ -10850,6 +10853,12 @@ packages:
     dev: false
     resolution:
       integrity: sha512-GIyAXC2cB7LjvpgMt9EKS2ldqr0MTrORaleiOno6TweZ6r3TKtoFQWay/2PceJ3RuBasOHzXNn5Lrw1X0bEjqA==
+  /ws/7.2.0:
+    dependencies:
+      async-limiter: 1.0.1
+    dev: false
+    resolution:
+      integrity: sha512-+SqNqFbwTm/0DC18KYzIsMTnEWpLwJsiasW/O17la4iDRRIO9uaHbvKiAS3AHgTiuuWerK/brj4O6MYZkei9xg==
   /xml-name-validator/3.0.0:
     dev: false
     resolution:
@@ -10934,13 +10943,18 @@ packages:
     dev: false
     resolution:
       integrity: sha512-2eehun/8ALW8TLoIl7MVaRUrg+yCnenu8B4kBlRxj3GJGDKU1Og7sMXPNm1BYyM1DOJmTZ4YeN/Nwxv+8XJsUA==
-  'file:projects/coop-state-machine-backend.tgz':
+  'file:projects/coop-state-machine-backend.tgz_eslint@5.16.0':
     dependencies:
-      material-design-icons: 3.0.1
+      babel-eslint: 10.0.3_eslint@5.16.0
+      express: 4.17.1
+      ws: 7.2.0
     dev: false
+    id: 'file:projects/coop-state-machine-backend.tgz'
     name: '@rush-temp/coop-state-machine-backend'
+    peerDependencies:
+      eslint: '*'
     resolution:
-      integrity: sha512-coB1mv8LaRLXBp6sVpIN6tZZgrpEY9yLkS5zMmW33BKXhfujIXFZILuHRgAKPkZJBPRN0qr9EivLkHsp4BYR0w==
+      integrity: sha512-U+42ENi72o/vhBlPP5r+/M87Eed5AMUMfcT89n2bQDUeo6ncnSjhLQOB22yB50MGHhl/JFqg66vmMM1sUeEYDQ==
       tarball: 'file:projects/coop-state-machine-backend.tgz'
     version: 0.0.0
   'file:projects/coop-state-machine-frontend.tgz':
@@ -10969,6 +10983,7 @@ packages:
       raw-loader: 3.1.0_webpack@4.41.2
       typescript: 3.6.4
       vue: 2.6.10
+      vue-eslint-parser: 5.0.0_eslint@5.16.0
       vue-jest: 3.0.5_9235beb11cb2cd2c17b886f42402aca4
       vue-loader: 15.7.1_css-loader@3.2.0+webpack@4.41.2
       vue-style-loader: 4.1.2
@@ -10981,7 +10996,7 @@ packages:
     dev: false
     name: '@rush-temp/coop-state-machine-frontend'
     resolution:
-      integrity: sha512-qNnbI8ddNY4R5Ju87/4/PJ1yEEipdnlvTS9W9xalE4HjrlGvmYRnf7ewCfno9f1Fxyon9IHzQJsnoK+fl9BH6Q==
+      integrity: sha512-tf4E7qCifGt/wP6N2w63Uff9J9ofIS96yNOhjsrFDECAqTe6h3XkwyDcfUc/K3Ev7gagQQHN7IWrlbSoD4ap2Q==
       tarball: 'file:projects/coop-state-machine-frontend.tgz'
     version: 0.0.0
   'file:projects/coop-state-machine-storybook.tgz_typescript@3.6.4':
@@ -11058,6 +11073,7 @@ specifiers:
   diff-match-patch: ^1.0.4
   eslint: ^5.16.0
   eslint-plugin-vue: ^5.0.0
+  express: ^4.17.1
   file-loader: ^4.2.0
   html-webpack-plugin: ^3.2.0
   jest: ^24.9.0
@@ -11070,6 +11086,7 @@ specifiers:
   react-dom: ^16.0.0
   typescript: '*'
   vue: ^2.6.10
+  vue-eslint-parser: ^5.0.0
   vue-jest: ^3.0.5
   vue-loader: ^15.7.0
   vue-style-loader: ^4.1.2
@@ -11079,3 +11096,4 @@ specifiers:
   webpack: '>=2'
   webpack-cli: '>=2'
   webpack-dev-server: ^3.8.2
+  ws: ^7.2.0

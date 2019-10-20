@@ -22,6 +22,7 @@
         "diff-match-patch": "^1.0.4",
         "eslint": "^5.16.0",
         "eslint-plugin-vue": "^5.0.0",
+        "vue-eslint-parser": "^5.0.0",
         "jest": "^24.9.0",
         "jest-serializer-vue": "^0.2.0",
         "keen-ui": "^1.2.0",
@@ -40,6 +41,37 @@
         "webpack-cli": ">=2",
         "html-webpack-plugin": "^3.2.0",
         "webpack-dev-server": "^3.8.2"
+    },
+    "eslintConfig": {
+        "root": true,
+        "env": {
+            "node": true
+        },
+        "extends": [
+            "plugin:vue/essential",
+            "eslint:recommended"
+        ],
+        "rules": {
+            "no-console": "off",
+            "no-unused-vars": "off",
+            "no-case-declarations": "off",
+            "no-extra-boolean-cast": "off"
+        },
+        "parserOptions": {
+            "parser": "babel-eslint",
+            "ecmaVersion": 2018,
+            "sourceType": "module"
+        },
+        "overrides": [
+            {
+                "files": [
+                    "**/__tests__/*.{j,t}s?(x)"
+                ],
+                "env": {
+                    "jest": true
+                }
+            }
+        ]
     },
     "postcss": {
         "plugins": {
