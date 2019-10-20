@@ -2,19 +2,21 @@
 // with the vuex store for data that should be undo/redo-able
 
 import runnerService from './runnerService'
+import logService from './logService'
 
 export const gameService = new (function() {
     this.connectStore = function(store) {
         this.store = store
     }
 
-    this.getGameState = function(store) {
-        const { state } = store
+    // this.getGameState = function(store) {
+    //     const { state } = store
 
-        return {
-            worldCoords: state.worldCoords,
-        }
-    }
+    //     return {
+    //         worldCoords: state.worldCoords,
+    //         playerStates: state.playerStates,
+    //     }
+    // }
 
     this.gotoTurn = async function(vueInstance, turnNumber) {
         if (typeof turnNumber !== 'number') {
@@ -70,9 +72,10 @@ export const gameService = new (function() {
                 let lastKnownState
 
                 await runnerService.tick(
-                    this.getGameState(vueInstance.$store),
-                    (action, lastKnownState) => {
+                    vueInstance.$store.state,
+                    (name, action, lastKnownState) => {
                         lastKnownState = this.processAction(
+                            name,
                             action,
                             vueInstance.$store
                         )
@@ -83,21 +86,74 @@ export const gameService = new (function() {
         } while (vueInstance.$store.state.currentTurn < turnNumber)
     }
 
-    this.processAction = function(actionObj, store) {
+    this.processAction = function(name, actionObj, store) {
+        this.ensurePlayerState(store, name)
+
         switch (actionObj.action) {
-            case 'build':
-                store.commit('setWorldCoords', {
-                    coords: { x: actionObj.x, y: actionObj.y, z: actionObj.z || 0 },
-                    data: {
-                        type: 'buildings/buildingTiles_000.png',
-                    },
+            case 'move':
+                store.commit('setPlayerPosition', {
+                    name,
+                    coords: actionObj.coords,
                 })
+                store.commit('recordPlayerAction', {
+                    ...actionObj,
+                    success: true,
+                    completed: true,
+                })
+                logService.log(
+                    'player ' +
+                        name +
+                        ' moved to ' +
+                        JSON.stringify(actionObj.coords) +
+                        '.'
+                )
+                break
+            case 'build':
+                if (store.state.playerStates[name].position !== undefined) {
+                    let coords = store.state.playerStates[name].position
+
+                    store.commit('setWorldCoords', {
+                        coords,
+                        data: {
+                            type: 'buildings/buildingTiles_000.png',
+                        },
+                    })
+                    logService.log(
+                        'player ' +
+                            name +
+                            ' is building at ' +
+                            JSON.stringify(coords)
+                    )
+                } else {
+                    logService.log(
+                        'player ' +
+                            name +
+                            ' attempted to build without moving to a XY position prior to it.'
+                    )
+                }
+
                 break
             default:
+                logService.log(
+                    'player ' + name + ' attempted an incorrect action.'
+                )
+
+                store.commit('recordPlayerAction', {
+                    ...actionObj,
+                    success: false,
+                    completed: false,
+                })
+
                 break
         }
 
-        return this.getGameState(store)
+        return store.state
+    }
+
+    this.ensurePlayerState = function(store, name) {
+        if (!store.state.playerStates[name]) {
+            store.commit('createEmptyPlayerState', name)
+        }
     }
 })()
 

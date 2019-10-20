@@ -1,4 +1,4 @@
-"use strict";
+'use strict'
 
 const TIMEOUT = 2000
 const TIMEOUT_DEBUG = 100000000
@@ -19,7 +19,15 @@ const createWorkerManager = (name, initialWorkerCode = undefined) => {
         this.update = workerCode => {
             // generates a worker
             const workerBlob = new Blob(
-                [boilerplateWorkerCode.replace(/\/\* USER_CODE \*\/|'USER_CODE'/, workerCode)],
+                [
+                    boilerplateWorkerCode.replace(
+                        /\/\* USER_CODE \*\/|'USER_CODE'/,
+                        workerCode.replace(
+                            /\n/g,
+                            '\n' + new Array(12).fill(' ').join('')
+                        )
+                    ),
+                ],
                 {
                     type: 'text/javascript',
                 }
@@ -56,9 +64,14 @@ const createWorkerManager = (name, initialWorkerCode = undefined) => {
             }
 
             this.tick = (state, timeout = TIMEOUT_DEBUG) => {
-                return postMessageWait(worker, { topic: 'tick', state }, undefined, {
-                    timeout,
-                }).then(response => {
+                return postMessageWait(
+                    worker,
+                    { name, topic: 'tick', state },
+                    undefined,
+                    {
+                        timeout,
+                    }
+                ).then(response => {
                     return response.ackData
                 })
             }
@@ -145,7 +158,9 @@ const messageHandler = event => {
             const getWorkersLeftToTick = () =>
                 workerManagers.length - currentTick
 
-                workerManagers[currentTick].tick(event.data).then(response => {
+            let name = workerManagers[currentTick].name
+
+            workerManagers[currentTick].tick(event.data).then(response => {
                 currentTick++
 
                 if (getWorkersLeftToTick() === 0) {
@@ -157,6 +172,7 @@ const messageHandler = event => {
                         topic: 'tick-one-worker-ack',
                         id: event.data.id,
                         allWorkersTicked: currentTick === 0,
+                        name,
                         response,
                     },
                     { targetOrigin: '*' }

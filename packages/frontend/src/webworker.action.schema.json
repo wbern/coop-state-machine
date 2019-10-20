@@ -14,8 +14,13 @@
         {
             "properties": {
                 "action": { "enum": ["build"] }
+            }
+        },
+        {
+            "properties": {
+                "action": { "enum": ["move"] }
             },
-            "required": ["x", "y"]
+            "required": ["coords"]
         },
         {
             "properties": {

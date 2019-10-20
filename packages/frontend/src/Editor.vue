@@ -49,7 +49,7 @@ export default {
     props: {
         defaultText: {
             type: String,
-            default: () => `function main(gameState) {
+            default: () => `function main(gameState, playerState, lastAction) {
     // Hi there! Want to get started?
     // Focus this editor, press \`Ctrl + Space\` and type "action" to get suggestions.
     

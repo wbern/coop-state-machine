@@ -1,7 +1,7 @@
 // this code is isolated by a sandboxed iframe, as well as a web worker
 self.onmessage = function(event) {
     if (event.data && event.data.topic === 'tick') {
-        const userFnWrapper = function(data) {
+        const userFnWrapper = function(gameState, playerState, lastAction) {
             // shadow some variables so they can't be accessed by user code
             const self = undefined
             const event = undefined
@@ -13,7 +13,7 @@ self.onmessage = function(event) {
             // user must have defined a main method
 
             // eslint-disable-next-line
-            let result = main(data)
+            let result = main(gameState, playerState, lastAction)
 
             if (Object.getOwnPropertyNames(result || {}).length > 0) {
                 return result
@@ -24,10 +24,25 @@ self.onmessage = function(event) {
         let userFnOut
 
         try {
-            const filteredData = { ...event.data }
-            delete filteredData.topic
+            const filteredGameState = { ...event.data.state }
+            // not sure why these are present
+            delete filteredGameState.topic
+            delete filteredGameState.id
 
-            userFnOut = new userFnWrapper(filteredData)
+            let playerStates = event.data.state.playerStates || {}
+            let playerState = playerStates[event.data.name] || {}
+
+            let playerActions = playerState.actions || []
+            let lastAction =
+                playerActions.length > 0
+                    ? playerActions[playerActions.length - 1]
+                    : null
+
+            userFnOut = new userFnWrapper(
+                filteredGameState,
+                playerState,
+                lastAction
+            )
         } catch (e) {
             userFnOut = { action: 'worker-error', error: e.toString() }
         }

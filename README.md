@@ -1,4 +1,4 @@
-# frontend-world
+# coop-state-machine
 
 ## Project setup
 ```

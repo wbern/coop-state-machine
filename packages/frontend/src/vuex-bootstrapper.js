@@ -86,6 +86,7 @@ const createWorldCoords = options => {
 
 export const getDefaultState = () => ({
     worldCoords: createWorldCoords(),
+    playerStates: {},
     currentTurn: 0,
 })
 
@@ -129,6 +130,18 @@ export const createStore = _Vue => {
                 // to trigger vue's reactivity
                 Vue.set(this.state.worldCoords, this.state.worldCoords)
                 // this.state.worldCoords = [...this.state.worldCoords];
+            },
+            // player-related
+            createEmptyPlayerState(state, payload) {
+                state.playerStates[payload] = {
+                    actions: []
+                }
+            },
+            setPlayerPosition(state, payload) {
+                state.playerStates[payload.name].position = payload.coords
+            },
+            recordPlayerAction(state, payload) {
+                state.playerStates[payload.name].actions.push(payload)
             },
             // needed for undo/redo plugin
             emptyState() {

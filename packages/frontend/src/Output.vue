@@ -23,20 +23,52 @@ import 'ace-builds/webpack-resolver'
 
 export default {
     mounted() {
-        const editor = ace.edit(this.$refs.output)
+        window.addEventListener('output', this.onOutputFromWindow)
 
-        editor.setOptions({
+        this.editor = ace.edit(this.$refs.output)
+
+        this.editor.setOptions({
             readOnly: true,
             showGutter: false,
             // showLineNumbers: false,
             vScrollBarAlwaysVisible: true,
             wrapBehavioursEnabled: true,
-            
+            autoScrollEditorIntoView: true,
+            wrap: true,
         })
 
-        editor.setTheme('ace/theme/monokai')
-        editor.session.setMode('ace/mode/markdown')
+        this.editor.setTheme('ace/theme/monokai')
+        this.editor.session.setMode('ace/mode/text')
+
+        this.editor.session.on('change', () => {
+            this.editor.renderer.scrollToLine(Number.POSITIVE_INFINITY)
+        })
+
+        window.edt = this.editor
     },
+    beforeDestroy() {
+        window.removeEventListener('output', this.onOutputFromWindow)
+    },
+    methods: {
+        writeLine(text) {
+            this.editor.session.insert(
+                {
+                    row: this.editor.session.getLength(),
+                    column: 0,
+                },
+                text + '\n'
+            )
+        },
+        getTimestamp() {
+            return new Date().toISOString().match(/[0-9]+:[0-9]+:[0-9]+/)[0]
+        },
+        onOutputFromWindow(event) {
+            this.writeLine(this.getTimestamp() + ': ' + event.detail)
+        },
+    },
+    data: () => ({
+        editor: null,
+    }),
 }
 </script>
 <style scoped>
@@ -49,7 +81,6 @@ export default {
 #output {
     height: 100%;
     width: 100%;
-
 
     border-left: 3px solid#454545;
     border-bottom: 4px solid#454545;

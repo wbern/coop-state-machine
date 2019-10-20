@@ -38,7 +38,7 @@ export const runnerService = new (function() {
 
                     // here is where we handle the response data in some way
                     let nextState = modifyStateCallback
-                        ? modifyStateCallback(ackData.response, lastKnownState)
+                        ? modifyStateCallback(ackData.name, ackData.response, lastKnownState)
                         : // state updates not connected
                           {}
 
