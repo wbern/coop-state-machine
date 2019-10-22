@@ -25,3 +25,5 @@ storybook-static
 common/temp
 dist
 *.log
+**/.rush/temp
+.rush/temp
