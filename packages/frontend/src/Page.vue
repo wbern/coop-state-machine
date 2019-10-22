@@ -30,7 +30,9 @@
                         @code-change="onCodeChange($event, tab.id)"
                     ></Editor>
                 </div>
-                <div class="tab-contents" v-if="tab.id === 'othersCode'"></div>
+                <div class="tab-contents" v-if="tab.id === 'othersCode'">
+                    <Multiplayer></Multiplayer>
+                </div>
                 <div class="tab-contents" v-if="tab.id === 'gameConfig'"></div>
             </ui-tab>
         </ui-tabs>
@@ -41,6 +43,7 @@ import City from './City.vue'
 import Editor from './Editor.vue'
 import Output from './Output.vue'
 import Controls from './Controls.vue'
+import Multiplayer from './Multiplayer.vue'
 
 import runnerService from './runnerService'
 import gameService from './gameService'
@@ -51,15 +54,26 @@ import multiplayerService from './multiplayerService'
 import { UiAlert, UiButton, UiTabs, UiTab, UiIcon } from 'keen-ui'
 
 export default {
-    components: { City, Editor, Output, UiTabs, UiTab, UiIcon, Controls },
+    components: {
+        City,
+        Editor,
+        Output,
+        UiTabs,
+        UiTab,
+        UiIcon,
+        Controls,
+        Multiplayer,
+    },
     mounted() {
-        multiplayerService.getRoomId().then(roomId => {
-            this.roomId = roomId
-            logService.log('room id is ' + this.roomId)
+        multiplayerService.onRoomId.subscribe(roomId => {
+            if (!this.roomId && roomId) {
+                this.roomId = roomId
+                logService.log('room id is ' + this.roomId)
+            }
         })
     },
     data: () => ({
-        roomId: multiplayerService.getRoomId(),
+        roomId: null,
         controlTabs: [
             {
                 title: 'Your Code',

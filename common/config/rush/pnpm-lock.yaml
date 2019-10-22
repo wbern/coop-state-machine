@@ -18,6 +18,7 @@ dependencies:
   babel-loader: 8.0.6_@babel+core@7.6.4+webpack@4.41.2
   babel-plugin-transform-es2015-modules-commonjs: 6.26.2
   babel-preset-vue: 2.0.2
+  bluebird: 3.7.1
   core-js: 2.6.10
   css-loader: 3.2.0_webpack@4.41.2
   diff-match-patch: 1.0.4
@@ -34,6 +35,7 @@ dependencies:
   raw-loader: 3.1.0_webpack@4.41.2
   react: 16.10.2
   react-dom: 16.10.2_react@16.10.2
+  rxjs: 6.5.3
   socket.io: 2.3.0
   socket.io-client: 2.3.0
   typescript: 3.6.4
@@ -48,7 +50,6 @@ dependencies:
   webpack: 4.41.2_webpack@4.41.2
   webpack-cli: 3.3.9_webpack@4.41.2
   webpack-dev-server: 3.8.2_webpack@4.41.2
-  ws: 7.2.0
 lockfileVersion: 5.1
 packages:
   /@babel/code-frame/7.5.5:
@@ -10339,6 +10340,9 @@ packages:
       node: '>=6'
     peerDependencies:
       typescript: '*'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
     resolution:
       integrity: sha512-1J/vefLC+BWSo+qe8OnJQfWTYRS6ingxjwqmHMqaMxXMj7kFtKLgAaYW3JeX3mktjgUL+etlU8/B4VUAUI9QGw==
   /tsconfig/7.0.0:
@@ -10546,6 +10550,9 @@ packages:
     peerDependencies:
       file-loader: '*'
       webpack: ^4.0.0
+    peerDependenciesMeta:
+      file-loader:
+        optional: true
     resolution:
       integrity: sha512-G8nk3np8ZAnwhHXas1JxJEwJyQdqFXAKJehfgZ/XrC48volFBRtO+FIKtF2u0Ma3bw+4vnDVjHPAQYlF9p2vsw==
   /url-parse/1.4.7:
@@ -11158,6 +11165,7 @@ packages:
   'file:projects/coop-state-machine-backend.tgz_eslint@5.16.0':
     dependencies:
       babel-eslint: 10.0.3_eslint@5.16.0
+      bluebird: 3.7.1
       express: 4.17.1
       socket.io: 2.3.0
       ws: 7.2.0
@@ -11167,7 +11175,7 @@ packages:
     peerDependencies:
       eslint: '*'
     resolution:
-      integrity: sha512-pb0mtYrZbpEb8pIXd2uXwLvwJHHPj/B31VZBuuV3BMloYYBxGSpqn54ggaN3cRs29rShyfslbJRoaR90OpfGiA==
+      integrity: sha512-rcdx1PkIyufaUObQPWJRS9ZEJKWWhtnUobLB/PGVImA6qqQMPGfdzoNNGr40nsnQmhw6rjOcH0rc+/UzSt4hpA==
       tarball: 'file:projects/coop-state-machine-backend.tgz'
     version: 0.0.0
   'file:projects/coop-state-machine-frontend.tgz':
@@ -11194,6 +11202,7 @@ packages:
       material-design-icons: 3.0.1
       prettier: 1.18.2
       raw-loader: 3.1.0_webpack@4.41.2
+      rxjs: 6.5.3
       socket.io-client: 2.3.0
       typescript: 3.6.4
       vue: 2.6.10
@@ -11210,7 +11219,7 @@ packages:
     dev: false
     name: '@rush-temp/coop-state-machine-frontend'
     resolution:
-      integrity: sha512-lP4/A8NuZlsxRs5AjmUBll+CDL+QRtGVV0xjO3MhvP2QOUbxiqXzVVGstMypznVIa0IyX0QwEU8YN3n9qZVJaw==
+      integrity: sha512-JjlMdcm/vsNYl7/U8TUi/XTBGQOLGF7KtKGxD2DbRVeUVq8Yd/k7MmAXllJm+HjTdBajvHL4pEPJTxctaa+2HA==
       tarball: 'file:projects/coop-state-machine-frontend.tgz'
     version: 0.0.0
   'file:projects/coop-state-machine-storybook.tgz_typescript@3.6.4':
@@ -11261,6 +11270,7 @@ packages:
       integrity: sha512-9ZK0RsQQqK0OgcQfnbKvrHn9FbbhsAqGYn6ByE40N5jyVjifNhERXBMyWH7mPGvCQl91Dy4KqSJfUNC3QhG+Sg==
       tarball: 'file:projects/coop-state-machine-storybook.tgz'
     version: 0.0.0
+registry: ''
 specifiers:
   '@babel/core': ^7.6.2
   '@emotion/core': ^10.0.17
@@ -11281,6 +11291,7 @@ specifiers:
   babel-loader: ^8.0.6
   babel-plugin-transform-es2015-modules-commonjs: ^6.26.2
   babel-preset-vue: ^2.0.2
+  bluebird: ^3.7.1
   core-js: ^2.6.5
   css-loader: '*'
   diff-match-patch: ^1.0.4
@@ -11297,6 +11308,7 @@ specifiers:
   raw-loader: ^3.1.0
   react: ^16.0.0
   react-dom: ^16.0.0
+  rxjs: ^6.5.3
   socket.io: ^2.3.0
   socket.io-client: ^2.3.0
   typescript: '*'
@@ -11311,4 +11323,3 @@ specifiers:
   webpack: '>=2'
   webpack-cli: '>=2'
   webpack-dev-server: ^3.8.2
-  ws: ^7.2.0

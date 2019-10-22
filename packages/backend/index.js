@@ -30,11 +30,33 @@ io.on('connection', function(socket) {
     const userId = getHash('userId')
     const roomId = getHash('roomId')
 
-    // users[userId] = {
-    //     roomId,
-    // }
+    users[userId] = {
+        userId,
+        roomId,
+        currentRoomId: roomId,
+    }
 
-    socket.on('room-id', function(name, fn) {
-        fn(roomId)
+    // get room id that belongs to the user
+    const getRoomId = () => roomId
+    const emitRoomId = () => socket.emit('room-id', getRoomId())
+    socket.on('req:room-id', function(data) {
+        emitRoomId()
+    })
+
+    // get users in current room
+    const getUsersInRoom = () => {
+        let usersInRoom = []
+
+        Object.keys(users).forEach(userName => {
+            if (users[userName].currentRoomId === users[userId].currentRoomId) {
+                usersInRoom.push(userName)
+            }
+        })
+
+        return usersInRoom
+    }
+    const emitUsersInRoom = () => socket.emit('users-in-room', getUsersInRoom())
+    socket.on('req:users-in-room', function() {
+        emitUsersInRoom()
     })
 })
