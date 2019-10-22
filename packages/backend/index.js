@@ -37,10 +37,15 @@ io.on('connection', function(socket) {
     }
 
     // get room id that belongs to the user
-    const getRoomId = () => roomId
-    const emitRoomId = () => socket.emit('room-id', getRoomId())
+    const emitRoomId = () => socket.emit('room-id', roomId)
     socket.on('req:room-id', function(data) {
         emitRoomId()
+    })
+
+    // get user id
+    const emitUserId = () => socket.emit('user-id', userId)
+    socket.on('req:user-id', function(data) {
+        emitUserId()
     })
 
     // get users in current room
@@ -58,5 +63,13 @@ io.on('connection', function(socket) {
     const emitUsersInRoom = () => socket.emit('users-in-room', getUsersInRoom())
     socket.on('req:users-in-room', function() {
         emitUsersInRoom()
+    })
+
+    const emitCodeChange = () =>
+        socket.emit('code-change', { user: userId, code: users[userId].code })
+
+    socket.on('code-change', function(code) {
+        users[userId].code = code
+        emitCodeChange()
     })
 })

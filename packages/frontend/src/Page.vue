@@ -71,9 +71,17 @@ export default {
                 logService.log('room id is ' + this.roomId)
             }
         })
+
+        multiplayerService.onUserId.subscribe(userId => {
+            if (!this.userId && userId) {
+                this.userId = userId
+                logService.log('room id is ' + this.userId)
+            }
+        })
     },
     data: () => ({
         roomId: null,
+        userId: null,
         controlTabs: [
             {
                 title: 'Your Code',
@@ -108,10 +116,16 @@ export default {
         async onTickRequest() {
             await gameService.nextTurn(this)
         },
-        onCodeChange(event, id) {
-            runnerService.setCode(id, event.getText())
-            this.canTick = true
-            this.$forceUpdate()
+        onCodeChange(event) {
+            if (this.userId) {
+                let code = event.getText()
+
+                gameService.setCode(this.userId, event.getText())
+                this.canTick = true
+                this.$forceUpdate()
+
+                multiplayerService.sendCodeChange(code)
+            }
         },
     },
 }

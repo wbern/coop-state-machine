@@ -1,12 +1,14 @@
 <template>
     <div class="wrapper">
         <p>Inspect the code from your room participants.</p>
-        <ui-collapsible
-            v-for="userName in usersInCurrentRoom"
-            :key="userName"
-        >
-            <div slot="header">{{ userName }}</div>
-            <MultiplayerEditor></MultiplayerEditor>
+        <ui-collapsible v-for="userName in usersInCurrentRoom" :key="userName">
+            <div slot="header">
+                {{ userName }}
+            </div>
+            <ui-checkbox checked :value="!disabledUsers.includes(userName)" @input="userEnableChange(userName, $event)"
+                >Enabled</ui-checkbox
+            >
+            <MultiplayerEditor :code="userCodes[userName]"></MultiplayerEditor>
         </ui-collapsible>
 
         <div class="alert-area">
@@ -21,15 +23,18 @@
     </div>
 </template>
 <script>
-import { UiAlert, UiCollapsible } from 'keen-ui'
+import Vue from 'Vue'
+import { UiAlert, UiCollapsible, UiCheckbox } from 'keen-ui'
 import MultiplayerEditor from './MultiplayerEditor.vue'
 
 import multiplayerService from './multiplayerService'
+import gameService from './gameService'
 
 export default {
     components: {
         UiAlert,
         UiCollapsible,
+        UiCheckbox,
         MultiplayerEditor,
     },
     mounted() {
@@ -42,11 +47,32 @@ export default {
         multiplayerService.onUsersInRoom.subscribe(usersInCurrentRoom => {
             this.usersInCurrentRoom = usersInCurrentRoom
         })
+        multiplayerService.onCodeChange.subscribe(change => {
+            Vue.set(this.userCodes, change.user, change.code)
+        })
+    },
+    methods: {
+        userEnableChange(userName, e) {
+            let newList = (this.disabledUsers = this.disabledUsers.filter(
+                user => user !== userName
+            ))
+
+            if (e === false) {
+                // user is disabled, add to array
+                newList.push(userName)
+            }
+
+            this.disabledUsers = newList
+
+            gameService.setDisabledUserScripts(this, this.disabledUsers);
+        },
     },
     props: {},
     data: () => ({
         showAloneAlert: true,
         usersInCurrentRoom: [],
+        userCodes: {},
+        disabledUsers: [],
     }),
 }
 </script>

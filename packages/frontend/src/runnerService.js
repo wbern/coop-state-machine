@@ -21,7 +21,7 @@ export const runnerService = new (function() {
         this.store = store
     }
 
-    this.tick = function(initialState = {}, modifyStateCallback = undefined) {
+    this.tick = function(initialState = {}, modifyStateCallback = undefined, disabledUserScripts) {
         let tickOneWorkerUntilAllTicked = lastKnownState =>
             sandbox
                 .postMessageWait('tick-one-worker', lastKnownState)

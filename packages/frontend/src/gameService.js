@@ -18,6 +18,30 @@ export const gameService = new (function() {
     //     }
     // }
 
+    this.disabledUserScriptsPending = []
+    this.disabledUserScripts = []
+
+    this.setDisabledUserScripts = function(vueInstance, users) {
+        if (vueInstance.$store.state.currentTurn === 0) {
+            this.disabledUserScripts = [...users]
+        } else {
+            this.disabledUserScriptsPending = users
+        }
+    }
+
+    this.startOver = function(vueInstance) {
+        console.log('going back to start')
+        vueInstance.$store.commit('emptyState')
+
+        this.disabledUserScripts = [...this.disabledUserScriptsPending]
+    }
+
+    this.setCode = function(id, code) {
+        if (this.disabledUserScripts.every(_id => _id !== id)) {
+            runnerService.setCode(id, code)
+        }
+    }
+
     this.gotoTurn = async function(vueInstance, turnNumber) {
         if (typeof turnNumber !== 'number') {
             throw new Error('invalid number')
@@ -39,8 +63,7 @@ export const gameService = new (function() {
     ) {
         if (turnNumber === 0) {
             // go back to start
-            console.log('going back to start')
-            vueInstance.$store.commit('emptyState')
+            this.startOver(vueInstance)
         } else if (vueInstance.$store.state.currentTurn > turnNumber) {
             // go back
             do {
@@ -80,7 +103,8 @@ export const gameService = new (function() {
                             vueInstance.$store
                         )
                         return lastKnownState
-                    }
+                    },
+                    this.disabledUserScripts
                 )
             }
         } while (vueInstance.$store.state.currentTurn < turnNumber)

@@ -12,6 +12,10 @@ export const socketService = new (function() {
     this.sendRequest = function(message, data) {
         this.socket.emit('req:' + message, data)
     }
+
+    this.send = function(message, data) {
+        this.socket.emit(message, data)
+    }
 })()
 
 window.socketService = socketService

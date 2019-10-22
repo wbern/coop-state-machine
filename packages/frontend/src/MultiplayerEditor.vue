@@ -20,6 +20,8 @@ import 'ace-builds/webpack-resolver'
 // import ace from 'ace-builds/src/mode-javascript'
 // import '!file-loader!ace-builds/src/'
 
+import jshintSettings from './ace.jshint.settings'
+
 export default {
     mounted() {
         this.editor = ace.edit(this.$refs['multiplayer-editor'])
@@ -28,15 +30,37 @@ export default {
             // enableBasicAutocompletion: true,
             // enableSnippets: true,
             // enableLiveAutocompletion: false,
-            readonly: true,
+            readOnly: true,
         })
 
         this.editor.setTheme('ace/theme/monokai')
-        this.editor.session.setMode('ace/mode/text')
+
+        this.editor.session.on('changeMode', function(e, session) {
+            if ('ace/mode/javascript' === session.getMode().$id) {
+                if (!!session.$worker) {
+                    session.$worker.send('setOptions', jshintSettings)
+                }
+            }
+        })
+
+        this.editor.session.setMode('ace/mode/javascript')
 
         window.edt = this.editor
     },
     methods: {},
+    props: {
+        code: {
+            type: String,
+            default: () => '',
+        },
+    },
+    watch: {
+        code(newVal, oldVal) {
+            if (newVal !== oldVal) {
+                this.editor.session.setValue(newVal)
+            }
+        },
+    },
     data: () => ({
         editor: null,
     }),
