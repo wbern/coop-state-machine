@@ -25,10 +25,13 @@
             >
                 <ui-icon :icon="tab.icon" slot="icon"></ui-icon>
                 <!-- {{ tab.title }} -->
-                <Editor
-                    v-if="tab.id === 'tab1'"
-                    @code-change="onCodeChange($event, tab.id)"
-                ></Editor>
+                <div class="tab-contents" v-if="tab.id === 'userCode'">
+                    <Editor
+                        @code-change="onCodeChange($event, tab.id)"
+                    ></Editor>
+                </div>
+                <div class="tab-contents" v-if="tab.id === 'othersCode'"></div>
+                <div class="tab-contents" v-if="tab.id === 'gameConfig'"></div>
             </ui-tab>
         </ui-tabs>
     </div>
@@ -41,28 +44,37 @@ import Controls from './Controls.vue'
 
 import runnerService from './runnerService'
 import gameService from './gameService'
+import logService from './logService'
+
+import multiplayerService from './multiplayerService'
 
 import { UiAlert, UiButton, UiTabs, UiTab, UiIcon } from 'keen-ui'
 
 export default {
     components: { City, Editor, Output, UiTabs, UiTab, UiIcon, Controls },
-    mounted() {},
+    mounted() {
+        multiplayerService.getRoomId().then(roomId => {
+            this.roomId = roomId
+            logService.log('room id is ' + this.roomId)
+        })
+    },
     data: () => ({
+        roomId: multiplayerService.getRoomId(),
         controlTabs: [
             {
                 title: 'Your Code',
-                icon: 'looks_one',
-                id: 'tab1',
+                icon: 'person',
+                id: 'userCode',
             },
             {
                 title: 'Others Code',
-                icon: 'looks_two',
-                id: 'tab2',
+                icon: 'people',
+                id: 'othersCode',
             },
             {
                 title: 'Game config',
-                icon: 'looks_3',
-                id: 'tab3',
+                icon: 'memory',
+                id: 'gameConfig',
             },
         ],
         canTick: false,
@@ -118,6 +130,11 @@ export default {
 </style>
 <style>
 @import '~material-design-icons/iconfont/material-icons.css';
+
+.tab-contents {
+    display: flex;
+    flex: 1;
+}
 
 .ui-tabs {
     flex: 1;

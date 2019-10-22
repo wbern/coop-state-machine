@@ -6,7 +6,6 @@
         "build": "",
         "start": "node index.js"
     },
-    "devDependencies": {},
     "eslintConfig": {
         "root": true,
         "env": {
@@ -37,7 +36,8 @@
     },
     "dependencies": {
         "babel-eslint": "^10.0.1",
+        "bluebird": "^3.7.1",
         "express": "^4.17.1",
-        "ws": "^7.2.0"
+        "socket.io": "^2.3.0"
     }
 }

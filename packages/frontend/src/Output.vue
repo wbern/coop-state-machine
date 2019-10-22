@@ -63,7 +63,7 @@ export default {
             return new Date().toISOString().match(/[0-9]+:[0-9]+:[0-9]+/)[0]
         },
         onOutputFromWindow(event) {
-            this.writeLine(this.getTimestamp() + ': ' + event.detail)
+            this.writeLine(this.getTimestamp() + ' - ' + event.detail)
         },
     },
     data: () => ({

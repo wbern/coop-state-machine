@@ -1,8 +1,0 @@
-{
-  "files": {
-    "packages/backend/.rush/temp/shrinkwrap-deps.json": "33ae3a54c4348c9954174424ba23e7d56a78adc5",
-    "packages/backend/package.json": "2697fc9d6cb251948e8b3a31ec2457742a9b96bf",
-    "packages/backend/.rush/temp/package-deps_build.json": "a0b3bd49dc33858583491d1cb21da5dddb49b7e5"
-  },
-  "arguments": ""
-}
