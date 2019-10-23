@@ -201,6 +201,7 @@ export const gameService = new (function() {
             logService.log('player ' + name + ' attempted an incorrect action.')
 
             store.commit('recordPlayerAction', {
+                name,
                 ...actionObj,
                 success: false,
                 completed: true,

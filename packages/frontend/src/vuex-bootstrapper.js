@@ -134,13 +134,17 @@ export const createStore = _Vue => {
             // player-related
             createEmptyPlayerState(state, payload) {
                 state.playerStates[payload] = {
-                    actions: []
+                    actions: [],
                 }
             },
             setPlayerPosition(state, payload) {
                 state.playerStates[payload.name].position = payload.coords
             },
             recordPlayerAction(state, payload) {
+                if (typeof payload.name !== 'string') {
+                    throw new Error('name is not defined or is not a string')
+                }
+
                 state.playerStates[payload.name].actions.push(payload)
             },
             // needed for undo/redo plugin

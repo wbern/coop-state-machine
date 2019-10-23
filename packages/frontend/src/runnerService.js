@@ -5,8 +5,8 @@ import schema from './json-schemas/action.schema.json'
 const ajv = new Ajv({ allErrors: true })
 const validateWebWorkerAction = ajv.compile(schema)
 
-const invalidCommandObject = {
-    type: 'error',
+const invalidActionObject = {
+    action: 'skip',
 }
 
 export const runnerService = new (function() {
@@ -30,12 +30,15 @@ export const runnerService = new (function() {
             sandbox
                 .postMessageWait('tick-one-worker', lastKnownState)
                 .then(ackData => {
-                    if (!validateWebWorkerAction(ackData.response)) {
-                        ackData = {
-                            ...invalidCommandObject,
+                    let actionObj = ackData.response || invalidActionObject
+
+                    if (!validateWebWorkerAction(actionObj)) {
+                        actionObj = {
+                            ...actionObj,
+                            ...invalidActionObject,
                             message:
                                 "action '" +
-                                ackData.response.action +
+                                actionObj.action +
                                 "' does not exist.",
                         }
                     }
@@ -44,7 +47,7 @@ export const runnerService = new (function() {
                     let nextState = modifyStateCallback
                         ? modifyStateCallback(
                               ackData.name,
-                              ackData.response,
+                              actionObj,
                               lastKnownState
                           )
                         : // state updates not connected

@@ -213,11 +213,13 @@ export default {
                 this.ace.editor.session &&
                 this.ace.editor.session
                     .getAnnotations()
-                    // Filter away annoying non-line specific warnings like "ES5 option is now set per default"
+                    // it's nice to ignore warnings in general
+                    // but if we'd want to, we could ignore messages on row/col index -1
+                    // because they are just general warnings, and sometimes errors
                     .filter(
                         a =>
-                            a.column !== -1 &&
-                            a.row !== -1 &&
+                            // a.column === -1 &&
+                            // a.row === -1 &&
                             a.type !== 'warning'
                     ).length === 0
             ) {
