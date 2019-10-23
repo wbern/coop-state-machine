@@ -38,7 +38,7 @@ export const gameService = new (function() {
 
     this.setCode = function(id, code) {
         if (this.disabledUserScripts.every(_id => _id !== id)) {
-            runnerService.setCode(id, code)
+            runnerService.setCode(id, code, false)
         }
     }
 

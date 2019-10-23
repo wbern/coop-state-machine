@@ -21,7 +21,11 @@ export const runnerService = new (function() {
         this.store = store
     }
 
-    this.tick = function(initialState = {}, modifyStateCallback = undefined, disabledUserScripts) {
+    this.tick = function(
+        initialState = {},
+        modifyStateCallback = undefined,
+        disabledUserScripts
+    ) {
         let tickOneWorkerUntilAllTicked = lastKnownState =>
             sandbox
                 .postMessageWait('tick-one-worker', lastKnownState)
@@ -38,7 +42,11 @@ export const runnerService = new (function() {
 
                     // here is where we handle the response data in some way
                     let nextState = modifyStateCallback
-                        ? modifyStateCallback(ackData.name, ackData.response, lastKnownState)
+                        ? modifyStateCallback(
+                              ackData.name,
+                              ackData.response,
+                              lastKnownState
+                          )
                         : // state updates not connected
                           {}
 
@@ -67,7 +75,15 @@ export const runnerService = new (function() {
         return sandbox.doesSandboxExist()
     }
 
-    this.setCode = function(name = 'mrX', workerCode) {
+    this.setCode = function(name = 'mrX', workerCode, sanitize = true) {
+        if (sanitize) {
+            // don't pass annoying debugger; statements
+            workerCode = workerCode.replace(
+                /debugger/g,
+                "(function() { console.log('debugger statement was here')})()"
+            )
+        }
+
         this.userCodes[name] = workerCode
 
         this.syncSandbox({ name })
