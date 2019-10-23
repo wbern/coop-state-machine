@@ -195,4 +195,17 @@ export default {
     display: flex;
     flex: 1;
 }
+
+#kbshortcutmenu {
+    width: 50%;
+    height: 50%;
+    margin: 15% 25%;
+    min-width: 300px;
+    /* height: 50%; */
+    right: unset;
+    top: unset;
+    bottom: unset;
+    left: unset;
+    position: relative;
+}
 </style>

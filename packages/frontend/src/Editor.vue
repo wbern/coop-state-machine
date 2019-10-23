@@ -1,6 +1,6 @@
 <template>
     <div class="wrapper">
-        <div id="editor" ref="editor">{{ defaultText }}</div>
+        <div id="editor" ref="editor"></div>
         <div class="editor-controls">
             <ui-icon-button
                 @click="onFormatRequest"
@@ -8,6 +8,24 @@
                 class="editor-controls__icon"
                 icon="sort_by_alpha"
             ></ui-icon-button>
+            <ui-icon-button
+                @click="onShowKeybindingsRequest"
+                type="secondary"
+                class="editor-controls__icon"
+                icon="keyboard"
+            ></ui-icon-button>
+            <ui-icon-button
+                @click="onShowReturnObjects"
+                type="secondary"
+                class="editor-controls__icon"
+                icon="web_asset"
+            ></ui-icon-button>
+            <ui-modal ref="returnObjects" title="JSON objects">
+                <div v-for="(val, key) in actionSchemas" :key="key">
+                    <h1>{{ key }}</h1>
+                    <code>{{ val }}</code>
+                </div>
+            </ui-modal>
         </div>
     </div>
 </template>
@@ -19,16 +37,19 @@
 // import  '!!file-loader!monaco-editor/esm/vs/language/html/html.worker.js';
 // import  '!!file-loader!monaco-editor/esm/vs/language/typescript/ts.worker.js';
 
+import Vue from 'vue'
+
 import City from './City.vue'
 // import ace from 'ace-builds/src-min-noconflict/ace'
 import ace from 'ace-builds'
 import { Range, EditSession } from 'ace-builds'
 import snippetManager from 'ace-builds/src-noconflict/ext-language_tools'
 import 'ace-builds/src-noconflict/ext-language_tools'
+import 'ace-builds/src-noconflict/ext-keybinding_menu'
 import 'ace-builds/src-noconflict/mode-javascript'
 import 'ace-builds/webpack-resolver'
 
-import { UiIconButton } from 'keen-ui'
+import { UiIconButton, UiModal } from 'keen-ui'
 
 import prettier from 'prettier/standalone'
 import parserBabylon from 'prettier/parser-babylon'
@@ -43,40 +64,62 @@ import invest from './json-snippets/invest.json'
 import move from './json-snippets/move.json'
 import skip from './json-snippets/skip.json'
 
+import startingUserCode from '!!raw-loader!./iframe-isolated/starting-user-code'
+
 // import ace from 'ace-builds/src/mode-javascript'
 // import '!file-loader!ace-builds/src/'
 
 export default {
-    components: { UiIconButton },
+    components: { UiIconButton, UiModal },
     props: {
         defaultText: {
             type: String,
-            default: () => `function main(gameState, playerState, lastAction) {
-    // Hi there! Want to get started?
-    // Focus this editor, press \`Ctrl + Space\` and type "action" to get suggestions.
-    
-    return {
-        "action": "build"
-    }
-    
-    // When you're done, try the play controls under the game view
-}`,
+            default: () => startingUserCode,
         },
     },
     methods: {
+        onShowReturnObjects() {
+            this.$refs.returnObjects.open()
+        },
+        onShowKeybindingsRequest() {
+            this.ace.editor.execCommand('showKeyboardShortcuts')
+        },
+        formatText(text) {
+            return prettier.format(text, {
+                parser: 'babel',
+                plugins: [parserBabylon],
+                // general formatting options
+                trailingComma: 'none',
+                tabWidth: 4,
+                semi: false,
+                singleQuote: true,
+            })
+        },
         onFormatRequest() {
             let text = this.ace.editor.session.getValue()
 
-            let prettified = prettier.format(text, {
-                parser: 'babylon',
-                plugins: [parserBabylon],
-            })
+            let prettified = this.formatText(text)
 
             this.ace.editor.session.setValue(prettified)
         },
     },
     mounted() {
         this.ace.editor = ace.edit(this.$refs.editor)
+
+        this.ace.editor.session.setValue(this.formatText(this.defaultText))
+
+        this.ace.editor.commands.addCommand({
+            name: 'showKeyboardShortcuts',
+            bindKey: { win: 'Ctrl-Alt-h', mac: 'Command-Alt-h' },
+            exec: function(editor) {
+                ace.config.loadModule('ace/ext/keybinding_menu', function(
+                    module
+                ) {
+                    module.init(editor)
+                    editor.showKeyboardShortcuts()
+                })
+            },
+        })
 
         // Use this later for networking
         // You can also use the following properties:
@@ -107,10 +150,13 @@ export default {
         this.ace.editor.session.setMode('ace/mode/javascript')
 
         // set up snippets
-        delete build.$schema
-        delete invest.$schema
-        delete move.$schema
-        delete skip.$schema
+        Vue.set(this.actionSchemas, 'build', build)
+        Vue.set(this.actionSchemas, 'move', move)
+        Vue.set(this.actionSchemas, 'skip', skip)
+
+        Object.keys(this.actionSchemas).forEach(actionName => {
+            delete this.actionSchemas[actionName].$schema
+        })
 
         registerSnippets(
             this.ace.editor,
@@ -179,6 +225,7 @@ export default {
         ace: {
             editor: null,
         },
+        actionSchemas: {},
     }),
 }
 </script>
@@ -205,7 +252,8 @@ export default {
 .editor-controls {
     font-size: 36px;
     display: flex;
-    justify-content: flex-end;
+    flex-direction: column;
+    align-content: flex-end;
     margin: 4px 0;
 }
 </style>

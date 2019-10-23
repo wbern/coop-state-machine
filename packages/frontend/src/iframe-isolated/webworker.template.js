@@ -8,7 +8,11 @@ self.onmessage = function(event) {
             const userFnWrapper = undefined
             const userFnOut = undefined
 
+            // YOUR CODE STARTS HERE
+
             /* USER_CODE */
+
+            // END OF YOUR CODE
 
             // user must have defined a main method
 
