@@ -1,4 +1,4 @@
 {
-    "$schema": "../webworker.action.schema.json",
+    "$schema": "../json-schemas/action.schema.json",
     "action": "build"
 }

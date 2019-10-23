@@ -1,6 +1,6 @@
 import sandbox from './sandbox'
 import Ajv from 'ajv'
-import schema from './webworker.action.schema.json'
+import schema from './json-schemas/action.schema.json'
 
 const ajv = new Ajv({ allErrors: true })
 const validateWebWorkerAction = ajv.compile(schema)

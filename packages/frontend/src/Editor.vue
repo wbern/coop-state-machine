@@ -73,7 +73,7 @@ import invest from './json-snippets/invest.json'
 import move from './json-snippets/move.json'
 import skip from './json-snippets/skip.json'
 
-import actionSchema from './webworker.action.schema.json'
+import actionSchema from './json-schemas/action.schema.json'
 
 import startingUserCode from '!!raw-loader!./iframe-isolated/starting-user-code'
 
