@@ -3,7 +3,7 @@
         <p>Inspect the code from your room participants.</p>
         <ui-collapsible v-for="userName in usersInCurrentRoom" :key="userName">
             <div slot="header">
-                {{ userName }}
+                {{ 'User: ' + userName }}
             </div>
             <ui-checkbox checked :value="!disabledUsers.includes(userName)" @input="userEnableChange(userName, $event)"
                 >Enabled</ui-checkbox
