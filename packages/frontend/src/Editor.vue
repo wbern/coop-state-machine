@@ -21,9 +21,18 @@
                 icon="web_asset"
             ></ui-icon-button>
             <ui-modal ref="returnObjects" title="JSON objects">
-                <div v-for="(val, key) in actionSchemas" :key="key">
-                    <h1>{{ key }}</h1>
-                    <code>{{ val }}</code>
+                <h1>Schema</h1>
+                <code class="schema-code-help">{{ actionSchema }}</code>
+                <h1>Snippets</h1>
+                <div
+                    class="snippet-area-help"
+                    v-for="(val, key) in actionSnippets"
+                    :key="key"
+                >
+                    <section>
+                        <strong>Action: {{ key }}</strong>
+                    </section>
+                    <code class="snippet-code-help">{{ val }}</code>
                 </div>
             </ui-modal>
         </div>
@@ -63,6 +72,8 @@ import build from './json-snippets/build.json'
 import invest from './json-snippets/invest.json'
 import move from './json-snippets/move.json'
 import skip from './json-snippets/skip.json'
+
+import actionSchema from './webworker.action.schema.json'
 
 import startingUserCode from '!!raw-loader!./iframe-isolated/starting-user-code'
 
@@ -150,12 +161,12 @@ export default {
         this.ace.editor.session.setMode('ace/mode/javascript')
 
         // set up snippets
-        Vue.set(this.actionSchemas, 'build', build)
-        Vue.set(this.actionSchemas, 'move', move)
-        Vue.set(this.actionSchemas, 'skip', skip)
+        Vue.set(this.actionSnippets, 'build', build)
+        Vue.set(this.actionSnippets, 'move', move)
+        Vue.set(this.actionSnippets, 'skip', skip)
 
-        Object.keys(this.actionSchemas).forEach(actionName => {
-            delete this.actionSchemas[actionName].$schema
+        Object.keys(this.actionSnippets).forEach(actionName => {
+            delete this.actionSnippets[actionName].$schema
         })
 
         registerSnippets(
@@ -225,7 +236,8 @@ export default {
         ace: {
             editor: null,
         },
-        actionSchemas: {},
+        actionSnippets: {},
+        actionSchema: JSON.stringify(actionSchema, undefined, 4),
     }),
 }
 </script>
@@ -255,5 +267,17 @@ export default {
     flex-direction: column;
     align-content: flex-end;
     margin: 4px 0;
+}
+
+.schema-code-help {
+    white-space: pre-wrap;
+}
+
+.snippet-code-help {
+    white-space: pre-wrap;
+}
+
+.snippet-area-help {
+    margin-bottom: 8px;
 }
 </style>

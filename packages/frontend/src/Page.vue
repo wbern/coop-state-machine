@@ -68,14 +68,14 @@ export default {
         multiplayerService.onRoomId.subscribe(roomId => {
             if (!this.roomId && roomId) {
                 this.roomId = roomId
-                logService.log('room id is ' + this.roomId)
+                logService.log('your room id is ' + this.roomId)
             }
         })
 
         multiplayerService.onUserId.subscribe(userId => {
             if (!this.userId && userId) {
                 this.userId = userId
-                logService.log('room id is ' + this.userId)
+                logService.log('your user id is ' + this.userId)
             }
         })
 
