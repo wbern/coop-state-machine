@@ -198,7 +198,7 @@ export const gameService = new (function() {
                     throw new Error('invalid command type')
             }
         } catch (e) {
-            logService.log('player ' + name + ' attempted an incorrect action.')
+            logService.log('player ' + name + ' attempted an incorrect action. See devtools for detailed json validation output.')
 
             store.commit('recordPlayerAction', {
                 name,

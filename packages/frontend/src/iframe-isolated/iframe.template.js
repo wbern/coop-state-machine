@@ -120,7 +120,7 @@ const messageHandler = event => {
                     window.parent.postMessage(
                         {
                             topic: 'add-webworker-once-ack',
-                            id: event.data.id,
+                            callId: event.data.callId,
                             ackData: result,
                         },
                         { targetOrigin: '*' }
@@ -146,7 +146,10 @@ const messageHandler = event => {
             }
 
             window.parent.postMessage(
-                { topic: 'add-or-update-webworker-ack', id: event.data.id },
+                {
+                    topic: 'add-or-update-webworker-ack',
+                    callId: event.data.callId,
+                },
                 { targetOrigin: '*' }
             )
             break
@@ -170,7 +173,7 @@ const messageHandler = event => {
                 window.parent.postMessage(
                     {
                         topic: 'tick-one-worker-ack',
-                        id: event.data.id,
+                        callId: event.data.callId,
                         allWorkersTicked: currentTick === 0,
                         name,
                         response,
@@ -192,7 +195,7 @@ const messageHandler = event => {
             }
 
             window.parent.postMessage(
-                { topic: 'close-ack', id: event.data.id },
+                { topic: 'close-ack', callId: event.data.callId },
                 { targetOrigin: '*' }
             )
             break
@@ -207,7 +210,7 @@ const messageHandler = event => {
             }
 
             window.parent.postMessage(
-                { topic: 'close-webworkers-ack', id: event.data.id },
+                { topic: 'close-webworkers-ack', callId: event.data.callId },
                 { targetOrigin: '*' }
             )
             break
@@ -247,7 +250,7 @@ const postMessageWait = (target, message, postMessageOptions, options = {}) =>
             message = { topic: message }
         }
 
-        message.id = getUniqueId()
+        message.callId = getUniqueId()
 
         let setTimeoutId
 

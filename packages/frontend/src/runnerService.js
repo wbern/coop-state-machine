@@ -3,7 +3,7 @@ import Ajv from 'ajv'
 import schema from './json-schemas/action.schema.json'
 
 const ajv = new Ajv({ allErrors: true })
-const validateWebWorkerAction = ajv.compile(schema)
+const validateAction = ajv.compile(schema)
 
 const invalidActionObject = {
     action: 'skip',
@@ -32,7 +32,17 @@ export const runnerService = new (function() {
                 .then(ackData => {
                     let actionObj = ackData.response || invalidActionObject
 
-                    if (!validateWebWorkerAction(actionObj)) {
+                    if (!validateAction(actionObj)) {
+                        // yeah, errors get stored onto the function object..
+                        console.warn(
+                            'validation errors for action object',
+                            actionObj,
+                            'in',
+                            ackData,
+                            'were the following:\n',
+                            validateAction.errors
+                        )
+
                         actionObj = {
                             ...actionObj,
                             ...invalidActionObject,

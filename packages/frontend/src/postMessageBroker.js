@@ -36,7 +36,7 @@ export const postMessageWait = (
             message = { topic: message }
         }
 
-        message.id = getUniqueId()
+        message.callId = getUniqueId()
 
         let setTimeoutId
 

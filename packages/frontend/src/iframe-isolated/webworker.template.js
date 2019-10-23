@@ -31,7 +31,7 @@ self.onmessage = function(event) {
             const filteredGameState = { ...event.data.state }
             // not sure why these are present
             delete filteredGameState.topic
-            delete filteredGameState.id
+            delete filteredGameState.callId
 
             let playerStates = event.data.state.playerStates || {}
             let playerState = playerStates[event.data.name] || {}
@@ -54,7 +54,7 @@ self.onmessage = function(event) {
         self.postMessage(
             JSON.stringify({
                 topic: 'tick-ack',
-                id: event.data.id,
+                callId: event.data.callId,
                 ackData: userFnOut,
             })
         )
