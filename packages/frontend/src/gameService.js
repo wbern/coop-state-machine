@@ -104,6 +104,9 @@ export const gameService = new (function() {
                     // tick
                     console.log('ticking one step')
                     vueInstance.$store.commit('beginNextTurn')
+                    logService.log(
+                        'TURN #' + vueInstance.$store.state.currentTurn
+                    )
 
                     let lastKnownState
 
@@ -121,6 +124,10 @@ export const gameService = new (function() {
                     )
                 }
             } while (vueInstance.$store.state.currentTurn < requestedTurnNumber)
+
+            logService.log(
+                'END OF TURN #' + vueInstance.$store.state.currentTurn
+            )
         }
     }
 
