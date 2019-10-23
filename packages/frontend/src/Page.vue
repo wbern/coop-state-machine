@@ -78,6 +78,10 @@ export default {
                 logService.log('room id is ' + this.userId)
             }
         })
+
+        gameService.onStartOver.subscribe(() => {
+            this.applyCodeChanges()
+        })
     },
     data: () => ({
         roomId: null,
@@ -99,13 +103,9 @@ export default {
                 id: 'gameConfig',
             },
         ],
+        lastCodeChangeSinceStart: null,
         canTick: false,
     }),
-    // computed: {
-    //     canTick() {
-    //         return runnerService.canTick()
-    //     },
-    // },
     methods: {
         async onTickToTurnRequest(turnNumber) {
             await gameService.gotoTurn(this, turnNumber)
@@ -116,15 +116,28 @@ export default {
         async onTickRequest() {
             await gameService.nextTurn(this)
         },
+        applyCodeChanges() {
+            if (this.lastCodeChangeSinceStart) {
+                gameService.setCode(this.userId, this.lastCodeChangeSinceStart)
+
+                this.lastCodeChangeSinceStart = null
+                this.canTick = true
+
+            }
+        },
         onCodeChange(event) {
             if (this.userId) {
-                let code = event.getText()
+                this.lastCodeChangeSinceStart = event.getText()
 
-                gameService.setCode(this.userId, event.getText())
-                this.canTick = true
-                this.$forceUpdate()
+                // we notify other users of the new code no matter what
+                // the logic sequencing will need to be handled by their client
+                multiplayerService.sendCodeChange(this.lastCodeChangeSinceStart)
 
-                multiplayerService.sendCodeChange(code)
+                if (!gameService.isGameStarted(this)) {
+                    this.applyCodeChanges()
+                } else {
+                    this.canTick = false;
+                }
             }
         },
     },

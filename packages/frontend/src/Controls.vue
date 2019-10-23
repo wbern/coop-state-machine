@@ -2,7 +2,7 @@
     <div class="city-controls">
         <ui-icon-button
             @click="onSkipToBack"
-            :disabled="!canUndo"
+            :disabled="!canUndo || currentTurn === 0"
             type="secondary"
             class="city-controls__icon"
             icon="restore"
@@ -29,7 +29,7 @@
         </ui-modal>
         <ui-icon-button
             @click="onBack"
-            :disabled="!canUndo"
+            :disabled="!canUndo || currentTurn === 0"
             type="secondary"
             class="city-controls__icon"
             icon="skip_previous"
