@@ -29,6 +29,7 @@ dependencies:
   html-webpack-plugin: 3.2.0_webpack@4.41.2
   jest: 24.9.0
   jest-serializer-vue: 0.2.0
+  json5-loader: 3.0.0_webpack@4.41.2
   keen-ui: 1.2.0
   material-design-icons: 3.0.1
   prettier: 1.18.2
@@ -6793,6 +6794,19 @@ packages:
     dev: false
     resolution:
       integrity: sha512-c7/8mbUsKigAbLkD5B010BK4D9LZm7A1pNItkEwiUZRpIN66exu/e7YQWysGun+TRKaJp8MhemM+VkfWv42aCA==
+  /json5-loader/3.0.0_webpack@4.41.2:
+    dependencies:
+      json5: 2.1.1
+      loader-utils: 1.2.3
+      schema-utils: 1.0.0
+      webpack: 4.41.2_webpack@4.41.2
+    dev: false
+    engines:
+      node: '>= 8.9.0'
+    peerDependencies:
+      webpack: ^4.0.0
+    resolution:
+      integrity: sha512-U89cCwdjQKhWaAgurRXObwVf+Q9dCdZZCNgyfU2VXoGJu3rxjzcvBiSoVMD7lU1Z54XnJOrkfUMfMy+gleOPYQ==
   /json5/0.5.1:
     dev: false
     hasBin: true
@@ -11198,6 +11212,7 @@ packages:
       html-webpack-plugin: 3.2.0_webpack@4.41.2
       jest: 24.9.0
       jest-serializer-vue: 0.2.0
+      json5-loader: 3.0.0_webpack@4.41.2
       keen-ui: 1.2.0
       material-design-icons: 3.0.1
       prettier: 1.18.2
@@ -11219,7 +11234,7 @@ packages:
     dev: false
     name: '@rush-temp/coop-state-machine-frontend'
     resolution:
-      integrity: sha512-JjlMdcm/vsNYl7/U8TUi/XTBGQOLGF7KtKGxD2DbRVeUVq8Yd/k7MmAXllJm+HjTdBajvHL4pEPJTxctaa+2HA==
+      integrity: sha512-rP6zn0DCCF6UB2cYtFEZKMHDp/GIQbIZY/KGPgXUwoVxSelkhKv2a3KJeGxx08oSdyKdArRfdaitOx432h8Wdg==
       tarball: 'file:projects/coop-state-machine-frontend.tgz'
     version: 0.0.0
   'file:projects/coop-state-machine-storybook.tgz_typescript@3.6.4':
@@ -11302,6 +11317,7 @@ specifiers:
   html-webpack-plugin: ^3.2.0
   jest: ^24.9.0
   jest-serializer-vue: ^0.2.0
+  json5-loader: ^3.0.0
   keen-ui: ^1.2.0
   material-design-icons: ^3.0.1
   prettier: ^1.18.2

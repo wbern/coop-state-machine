@@ -68,10 +68,9 @@ import { registerSnippets, createSnippets } from './ace-snippets-extension'
 
 import jshintSettings from './ace.jshint.settings'
 
-import build from './json-snippets/build.json'
-import invest from './json-snippets/invest.json'
-import move from './json-snippets/move.json'
-import skip from './json-snippets/skip.json'
+import build from './json5-snippets/build.json'
+import move from './json5-snippets/move.json'
+import skip from './json5-snippets/skip.json'
 
 import actionSchema from './json-schemas/action.schema.json'
 
@@ -177,10 +176,6 @@ export default {
                 {
                     name: 'action: build',
                     code: 'return ' + JSON.stringify(build, undefined, 4),
-                },
-                {
-                    name: 'action: invest',
-                    code: 'return ' + JSON.stringify(invest, undefined, 4),
                 },
                 {
                     name: 'action: move',

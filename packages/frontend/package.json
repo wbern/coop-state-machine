@@ -42,6 +42,7 @@
         "vuex-undo-redo": "^1.1.4",
         "webpack": ">=2",
         "webpack-cli": ">=2",
+        "json5-loader": "^3.0.0",
         "webpack-dev-server": "^3.8.2"
     },
     "eslintConfig": {

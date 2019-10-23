@@ -11,14 +11,34 @@ export const gameService = new (function() {
         this.store = store
     }
 
-    // this.getGameState = function(store) {
-    //     const { state } = store
+    this.generateUsefulGameState = function(name, state) {
+        return {
+            // stuff like worldCoords, etc
+            ...state,
+            // extra variables, useful for players logic
+            tallestBuilding: (() => {
+                let tallestNumber = 0
+                let coords = null
 
-    //     return {
-    //         worldCoords: state.worldCoords,
-    //         playerStates: state.playerStates,
-    //     }
-    // }
+                state.worldCoords.forEach((cols, x) => {
+                    cols.forEach((row, y) => {
+                        if (row.length > tallestNumber || coords === null) {
+                            tallestNumber = row.length
+                            coords = {
+                                x,
+                                y,
+                            }
+                        }
+                    })
+                })
+
+                return coords
+            })(),
+            closestBuilding: (() => {
+                
+            })
+        }
+    }
 
     this.disabledUserScriptsPending = []
     this.disabledUserScripts = []
@@ -111,7 +131,10 @@ export const gameService = new (function() {
                     let lastKnownState
 
                     await runnerService.tick(
-                        vueInstance.$store.state,
+                        this.generateUsefulGameState(
+                            name,
+                            vueInstance.$store.state
+                        ),
                         (name, action, lastKnownState) => {
                             lastKnownState = this.processAction(
                                 name,
@@ -198,7 +221,11 @@ export const gameService = new (function() {
                     throw new Error('invalid command type')
             }
         } catch (e) {
-            logService.log('player ' + name + ' attempted an incorrect action. See devtools for detailed json validation output.')
+            logService.log(
+                'player ' +
+                    name +
+                    ' attempted an incorrect action. See devtools for detailed json validation output.'
+            )
 
             store.commit('recordPlayerAction', {
                 name,

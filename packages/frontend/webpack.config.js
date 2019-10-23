@@ -31,6 +31,13 @@ module.exports = env => {
                     exclude: /node_modules/,
                     loader: 'babel-loader',
                 },
+                {
+                    // make all files ending in .json5 use the `json5-loader`
+                    test: /\.json$/,
+                    include: /json5-snippets/,
+                    use: 'json5-loader',
+                    type: 'javascript/auto',
+                },
                 // this will apply to both plain `.css` files
                 // AND `<style>` blocks in `.vue` files
                 {

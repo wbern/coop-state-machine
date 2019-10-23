@@ -1,4 +1,0 @@
-{
-    "$schema": "../json-schemas/action.schema.json",
-    "action": "skip"
-}

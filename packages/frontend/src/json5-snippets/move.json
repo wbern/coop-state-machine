@@ -1,0 +1,8 @@
+{
+    "$schema": "../json-schemas/action.schema.json",
+    "action": "move",
+    "coords": {
+        "x": 0,
+        "y": 0
+    }
+}
