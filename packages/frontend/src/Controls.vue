@@ -14,6 +14,7 @@
             <ui-modal ref="rewindModal" title="Rewind back to turn..">
                 <ui-textbox
                     label="Turn #"
+                    :autofocus="true"
                     type="number"
                     :min="0"
                     :max="currentTurn - 1"
@@ -66,6 +67,7 @@
             ></ui-icon-button>
             <ui-modal ref="forwardModal" title="Skip to turn..">
                 <ui-textbox
+                    :autofocus="true"
                     label="Turn #"
                     type="number"
                     :min="currentTurn + 1"
@@ -118,6 +120,10 @@ export default {
         },
         onSkipToBack() {
             this.$refs['rewindModal'].open()
+            setTimeout(() => {
+                this.$refs['rewindModal'].$el.focus();
+                this.$refs['rewindModal'].$el.querySelector('input').focus()
+            }, 10)
             // this.$emit('start-over-request')
         },
         onBack() {
@@ -128,6 +134,10 @@ export default {
         },
         onSkipToEnd() {
             this.$refs['forwardModal'].open()
+            setTimeout(() => {
+                this.$refs['forwardModal'].$el.focus();
+                this.$refs['forwardModal'].$el.querySelector('input').focus()
+            }, 10)
         },
         onForward() {
             // this should not only be redoing, but also generating the "next step"
@@ -144,7 +154,6 @@ export default {
 <style scoped>
 .left,
 .right {
-
     flex: 1;
 }
 .city-controls__icon {
