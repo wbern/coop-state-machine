@@ -122,7 +122,6 @@ export default {
 
                 this.lastCodeChangeSinceStart = null
                 this.canTick = true
-
             }
         },
         onCodeChange(event) {
@@ -136,7 +135,7 @@ export default {
                 if (!gameService.isGameStarted(this)) {
                     this.applyCodeChanges()
                 } else {
-                    this.canTick = false;
+                    this.canTick = false
                 }
             }
         },

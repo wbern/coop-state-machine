@@ -31,9 +31,18 @@ io.on('connection', function(socket) {
     const roomId = getHash('roomId')
 
     users[userId] = {
+        socket,
         userId,
         roomId,
         currentRoomId: roomId,
+    }
+
+    const toUsersInRoomId = (_roomId, callback) => {
+        Object.keys(users).forEach(userName => {
+            if (users[userName].currentRoomId === _roomId) {
+                callback(userName)
+            }
+        })
     }
 
     // get room id that belongs to the user
@@ -52,24 +61,46 @@ io.on('connection', function(socket) {
     const getUsersInRoom = () => {
         let usersInRoom = []
 
-        Object.keys(users).forEach(userName => {
-            if (users[userName].currentRoomId === users[userId].currentRoomId) {
-                usersInRoom.push(userName)
-            }
+        toUsersInRoomId(users[userId].currentRoomId, userName => {
+            usersInRoom.push(userName)
         })
 
         return usersInRoom
     }
-    const emitUsersInRoom = () => socket.emit('users-in-room', getUsersInRoom())
+    const emitUsersInRoom = () => {
+        toUsersInRoomId(users[userId].currentRoomId, userName => {
+            users[userId].socket.emit('users-in-room', getUsersInRoom())
+        })
+    }
     socket.on('req:users-in-room', function() {
         emitUsersInRoom()
     })
 
-    const emitCodeChange = () =>
-        socket.emit('code-change', { user: userId, code: users[userId].code })
+    const emitCodeChange = () => {
+        toUsersInRoomId(users[userId].currentRoomId, userName => {
+            users[userName].socket.emit('code-change', {
+                user: userId,
+                code: users[userId].code,
+            })
+        })
+    }
 
     socket.on('code-change', function(code) {
         users[userId].code = code
+
+        // send code change to all users in that room
         emitCodeChange()
+    })
+
+    const emitRoomChange = () =>
+        socket.emit('room-change', {
+            user: userId,
+            code: users[userId].currentRoomId,
+        })
+
+    socket.on('room-change', function(roomId) {
+        users[userId].currentRoomId = roomId
+        emitRoomChange()
+        emitUsersInRoom()
     })
 })
