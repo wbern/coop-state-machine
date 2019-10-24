@@ -6,7 +6,16 @@ export const getUniqueId = () =>
 
 export const isTopicObject = obj => typeof obj === 'object' && obj !== null
 
-export const postMessageAck = (target, receivedMessage, postMessageOptions) => {
+export const postMessageAck = (
+    target,
+    receivedMessage,
+    postMessageOptions,
+    options
+) => {
+    if (options.serializeWithJson !== false) {
+        receivedMessage = JSON.parse(JSON.stringify(receivedMessage))
+    }
+
     let topicObject = isTopicObject(receivedMessage)
 
     if (topicObject) {
@@ -22,7 +31,12 @@ export const postMessageWait = (
     postMessageOptions,
     options = {}
 ) =>
-    new Promise((resolve, reject) => {
+    new Promise(resolve => {
+        if (options.serializeWithJson !== false) {
+            // unless specified false, do this to get rid of vue observer properties
+            message = JSON.parse(JSON.stringify(message))
+        }
+
         let topicObject = isTopicObject(message)
         let isWebWorker = false
 

@@ -225,7 +225,16 @@ const getUniqueId = () => window.crypto.getRandomValues(new Uint32Array(1))[0]
 
 const isTopicObject = obj => typeof obj === 'object' && obj !== null
 
-const postMessageAck = (target, receivedMessage, postMessageOptions) => {
+const postMessageAck = (
+    target,
+    receivedMessage,
+    postMessageOptions,
+    options
+) => {
+    if (options.serializeWithJson !== false) {
+        receivedMessage = JSON.parse(JSON.stringify(receivedMessage))
+    }
+
     let topicObject = isTopicObject(receivedMessage)
 
     if (topicObject) {
@@ -237,6 +246,11 @@ const postMessageAck = (target, receivedMessage, postMessageOptions) => {
 
 const postMessageWait = (target, message, postMessageOptions, options = {}) =>
     new Promise((resolve, reject) => {
+        if (options.serializeWithJson !== false) {
+            // unless specified false, do this to get rid of vue observer properties
+            message = JSON.parse(JSON.stringify(message))
+        }
+
         let topicObject = isTopicObject(message)
         let isWebWorker = false
 
