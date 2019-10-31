@@ -1,6 +1,7 @@
 import IFRAME_HTML from '!raw-loader!./iframe-isolated/iframe.html'
 import IFRAME_CODE from '!raw-loader!./iframe-isolated/iframe.template.js'
 import IFRAME_WEBWORKER_CODE from '!raw-loader!./iframe-isolated/webworker.template.js'
+import IFRAME_WEBWORKER_HELPERS_CODE from '!raw-loader!./iframe-isolated/helpers-code.js'
 
 import { postMessageWait, getUniqueId } from './postMessageBroker'
 
@@ -71,6 +72,9 @@ export const sandbox = new (function() {
                     ).replace(
                         '/* IFRAME_WEBWORKER_CODE */',
                         IFRAME_WEBWORKER_CODE
+                    ).replace(
+                        '/* IFRAME_WEBWORKER_HELPERS_CODE */',
+                        IFRAME_WEBWORKER_HELPERS_CODE
                     )
 
                     iframe.src =

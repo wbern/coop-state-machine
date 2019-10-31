@@ -32,11 +32,14 @@ dependencies:
   json5-loader: 3.0.0_webpack@4.41.2
   keen-ui: 1.2.0
   material-design-icons: 3.0.1
+  moment: 2.24.0
+  popular-movie-quotes: 1.2.0
   prettier: 1.18.2
   raw-loader: 3.1.0_webpack@4.41.2
   react: 16.10.2
   react-dom: 16.10.2_react@16.10.2
   rxjs: 6.5.3
+  sillyname: 0.1.0
   socket.io: 2.3.0
   socket.io-client: 2.3.0
   typescript: 3.6.4
@@ -7394,6 +7397,10 @@ packages:
     hasBin: true
     resolution:
       integrity: sha1-MAV0OOrGz3+MR2fzhkjWaX11yQM=
+  /moment/2.24.0:
+    dev: false
+    resolution:
+      integrity: sha512-bV7f+6l2QigeBBZSM/6yTNq4P2fNpSWj/0e7jQcy87A8e7o2nAfP/34/2ky5Vw4B9S446EtIhodAzkFCcR4dQg==
   /move-concurrently/1.0.1:
     dependencies:
       aproba: 1.2.0
@@ -8243,6 +8250,10 @@ packages:
     dev: false
     resolution:
       integrity: sha512-+G+EkOPoE5S/zChTpmBSSDYmhXJ5PsW8eMhH8cP/CQHMFPBG/kC9Y5IIw6qNYgdJ+/COf0ddY2li28iHaZRSjw==
+  /popular-movie-quotes/1.2.0:
+    dev: false
+    resolution:
+      integrity: sha512-U6PtQFiZVH2w/auO1Rh17em/FdQCzuPR5s2ifTqZxJKwl4zkvHcW9WcUiDZafIqxRVc/qOQE30mgkHY3Wn1Ptg==
   /portfinder/1.0.25:
     dependencies:
       async: 2.6.3
@@ -9575,6 +9586,10 @@ packages:
     dev: false
     resolution:
       integrity: sha1-tf3AjxKH6hF4Yo5BXiUTK3NkbG0=
+  /sillyname/0.1.0:
+    dev: false
+    resolution:
+      integrity: sha1-z9mIWOJJhnE0d3Xv47tRQfRsh9Y=
   /simplebar-react/1.2.3_react-dom@16.10.2+react@16.10.2:
     dependencies:
       prop-types: 15.7.2
@@ -11181,6 +11196,7 @@ packages:
       babel-eslint: 10.0.3_eslint@5.16.0
       bluebird: 3.7.1
       express: 4.17.1
+      sillyname: 0.1.0
       socket.io: 2.3.0
       ws: 7.2.0
     dev: false
@@ -11189,7 +11205,7 @@ packages:
     peerDependencies:
       eslint: '*'
     resolution:
-      integrity: sha512-rcdx1PkIyufaUObQPWJRS9ZEJKWWhtnUobLB/PGVImA6qqQMPGfdzoNNGr40nsnQmhw6rjOcH0rc+/UzSt4hpA==
+      integrity: sha512-6o+2gwUpshenpT375/2gawnOLRU+9EOGjUyDWuckCYPMW7lbwDTeSJoOQEAiWGGDzwAs5yhhZTNkfZFZsrljjw==
       tarball: 'file:projects/coop-state-machine-backend.tgz'
     version: 0.0.0
   'file:projects/coop-state-machine-frontend.tgz':
@@ -11215,6 +11231,8 @@ packages:
       json5-loader: 3.0.0_webpack@4.41.2
       keen-ui: 1.2.0
       material-design-icons: 3.0.1
+      moment: 2.24.0
+      popular-movie-quotes: 1.2.0
       prettier: 1.18.2
       raw-loader: 3.1.0_webpack@4.41.2
       rxjs: 6.5.3
@@ -11234,7 +11252,7 @@ packages:
     dev: false
     name: '@rush-temp/coop-state-machine-frontend'
     resolution:
-      integrity: sha512-rP6zn0DCCF6UB2cYtFEZKMHDp/GIQbIZY/KGPgXUwoVxSelkhKv2a3KJeGxx08oSdyKdArRfdaitOx432h8Wdg==
+      integrity: sha512-kF9/mkWD3m/JXFYqi7Xzb+hYLYA1f4ZFj1XKoNYa8aTRtnjPZxXHQpZivlhzW2ID6QRC2KisLmhBT4v2F/ujtQ==
       tarball: 'file:projects/coop-state-machine-frontend.tgz'
     version: 0.0.0
   'file:projects/coop-state-machine-storybook.tgz_typescript@3.6.4':
@@ -11320,11 +11338,14 @@ specifiers:
   json5-loader: ^3.0.0
   keen-ui: ^1.2.0
   material-design-icons: ^3.0.1
+  moment: ^2.24.0
+  popular-movie-quotes: ^1.2.0
   prettier: ^1.18.2
   raw-loader: ^3.1.0
   react: ^16.0.0
   react-dom: ^16.0.0
   rxjs: ^6.5.3
+  sillyname: ^0.1.0
   socket.io: ^2.3.0
   socket.io-client: ^2.3.0
   typescript: '*'

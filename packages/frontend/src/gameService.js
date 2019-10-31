@@ -11,32 +11,14 @@ export const gameService = new (function() {
         this.store = store
     }
 
-    this.generateUsefulGameState = function(name, state) {
+    this.generateUsefulGameState = function(state) {
         return {
             // stuff like worldCoords, etc
             ...state,
-            // extra variables, useful for players logic
-            tallestBuilding: (() => {
-                let tallestNumber = 0
-                let coords = null
-
-                state.worldCoords.forEach((cols, x) => {
-                    cols.forEach((row, y) => {
-                        if (row.length > tallestNumber || coords === null) {
-                            tallestNumber = row.length
-                            coords = {
-                                x,
-                                y,
-                            }
-                        }
-                    })
-                })
-
-                return coords
-            })(),
-            closestBuilding: (() => {
-                
-            })
+            // while there may be more added here later,
+            // there are more helper-like functions like getClosestBuilding()
+            // inside the web workers helper functions object.
+            // look in helpers-code.js for details
         }
     }
 
@@ -132,7 +114,6 @@ export const gameService = new (function() {
 
                     await runnerService.tick(
                         this.generateUsefulGameState(
-                            name,
                             vueInstance.$store.state
                         ),
                         (name, action, lastKnownState) => {
@@ -182,18 +163,24 @@ export const gameService = new (function() {
                     if (store.state.playerStates[name].position !== undefined) {
                         let coords = store.state.playerStates[name].position
 
+                        logService.log(
+                            'player ' +
+                                name +
+                                ' is building at ' +
+                                JSON.stringify(coords) +
+                                (store.state.worldCoords[coords.x][coords.y][
+                                    coords.z || 0
+                                ]
+                                    ? ' (present building will be replaced)'
+                                    : '')
+                        )
+
                         store.commit('setWorldCoords', {
                             coords,
                             data: {
                                 type: 'buildings/buildingTiles_000.png',
                             },
                         })
-                        logService.log(
-                            'player ' +
-                                name +
-                                ' is building at ' +
-                                JSON.stringify(coords)
-                        )
 
                         store.commit('recordPlayerAction', {
                             name,

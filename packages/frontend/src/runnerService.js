@@ -1,6 +1,7 @@
 import sandbox from './sandbox'
 import Ajv from 'ajv'
 import schema from './json-schemas/action.schema.json'
+import movieQuotes from 'popular-movie-quotes'
 
 const ajv = new Ajv({ allErrors: true })
 const validateAction = ajv.compile(schema)
@@ -97,7 +98,8 @@ export const runnerService = new (function() {
             )
         }
 
-        this.userCodes[name] = workerCode
+        this.userCodes[name] = workerCode =
+            '// ' + movieQuotes.getRandomQuote() + '\n' + workerCode
 
         this.syncSandbox({ name })
     }

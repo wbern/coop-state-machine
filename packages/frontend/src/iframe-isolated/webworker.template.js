@@ -1,27 +1,28 @@
-// this code is isolated by a sandboxed iframe, as well as a web worker
+/* USER_CODE */
+
+// 
+// END OF YOUR CODE
+// -----------------------
 self.onmessage = function(event) {
     if (event.data && event.data.topic === 'tick') {
-        const userFnWrapper = function(gameState, playerState, lastAction) {
-            // shadow some variables so they can't be accessed by user code
-            const self = undefined
-            const event = undefined
-            const userFnWrapper = undefined
-            const userFnOut = undefined
-
-            // YOUR CODE STARTS HERE
-
-            /* USER_CODE */
-
-            // END OF YOUR CODE
-
+        const userFnWrapper = function(
+            helpers,
+            gameState,
+            playerState,
+            lastAction
+        ) {
             // user must have defined a main method
 
-            // eslint-disable-next-line
-            let result = main(gameState, playerState, lastAction)
+            /* global main */
+            if (main && typeof main === 'function') {
+                let result = main(helpers, gameState, playerState, lastAction)
 
-            if (Object.getOwnPropertyNames(result || {}).length > 0) {
-                return result
+                if (Object.getOwnPropertyNames(result || {}).length > 0) {
+                    return result
+                }
             }
+
+            // default action
             return { action: 'skip' }
         }
 
@@ -43,6 +44,8 @@ self.onmessage = function(event) {
                     : null
 
             userFnOut = new userFnWrapper(
+                /* global getHelpersObject */
+                getHelpersObject(filteredGameState, playerState, lastAction),
                 filteredGameState,
                 playerState,
                 lastAction
@@ -60,3 +63,6 @@ self.onmessage = function(event) {
         )
     }
 }
+
+// HELPERS GENERATION CODE, gets assigned to window
+/* IFRAME_WEBWORKER_HELPERS_CODE */

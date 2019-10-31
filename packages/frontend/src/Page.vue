@@ -17,10 +17,14 @@
         </div>
         <ui-tabs type="icon-and-text" fullwidth fullheight ref="controlTabs">
             <ui-tab
-                :disabled="tab.id === 'tab2'"
                 :id="tab.id"
                 :key="tab.id"
-                :title="tab.title"
+                :title="
+                    tab.title +
+                        (tab.id === 'othersCode'
+                            ? ' (' + Math.max(0, userCount - 1) + ')'
+                            : '')
+                "
                 v-for="tab in controlTabs"
             >
                 <ui-icon :icon="tab.icon" slot="icon"></ui-icon>
@@ -33,7 +37,7 @@
                 <div class="tab-contents" v-if="tab.id === 'othersCode'">
                     <Multiplayer></Multiplayer>
                 </div>
-                <div class="tab-contents" v-if="tab.id === 'gameConfig'"></div>
+                <!-- <div class="tab-contents" v-if="tab.id === 'gameConfig'"></div> -->
             </ui-tab>
         </ui-tabs>
     </div>
@@ -79,12 +83,17 @@ export default {
             }
         })
 
+        multiplayerService.onUsersInRoom.subscribe(usersInCurrentRoom => {
+            this.userCount = usersInCurrentRoom.length
+        })
+
         gameService.onStartOver.subscribe(() => {
             this.applyCodeChanges()
         })
     },
     data: () => ({
         roomId: null,
+        userCount: 0,
         userId: null,
         controlTabs: [
             {
@@ -97,11 +106,11 @@ export default {
                 icon: 'people',
                 id: 'othersCode',
             },
-            {
-                title: 'Game config',
-                icon: 'memory',
-                id: 'gameConfig',
-            },
+            // {
+            //     title: 'Game config',
+            //     icon: 'memory',
+            //     id: 'gameConfig',
+            // },
         ],
         lastCodeChangeSinceStart: null,
         canTick: false,
@@ -125,18 +134,18 @@ export default {
             }
         },
         onCodeChange(event) {
+            this.lastCodeChangeSinceStart = event.getText()
+
+            // we notify other users of the new code no matter what
+            // the logic sequencing will need to be handled by their client
             if (this.userId) {
-                this.lastCodeChangeSinceStart = event.getText()
-
-                // we notify other users of the new code no matter what
-                // the logic sequencing will need to be handled by their client
                 multiplayerService.sendCodeChange(this.lastCodeChangeSinceStart)
+            }
 
-                if (!gameService.isGameStarted(this)) {
-                    this.applyCodeChanges()
-                } else {
-                    this.canTick = false
-                }
+            if (!gameService.isGameStarted(this)) {
+                this.applyCodeChanges()
+            } else {
+                this.canTick = false
             }
         },
     },

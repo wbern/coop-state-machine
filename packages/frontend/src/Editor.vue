@@ -18,12 +18,29 @@
                 @click="onShowReturnObjects"
                 type="secondary"
                 class="editor-controls__icon"
-                icon="web_asset"
+                icon="help"
             ></ui-icon-button>
             <ui-modal ref="returnObjects" title="JSON objects">
-                <h1>Schema</h1>
+                <h1>General tips</h1>
+                <p>
+                    Please check the "gameState" object for a lot of useful
+                    things (like coordinates), you can use either `console.log`
+                    it or use a `debugger;` statement to access them in chrome
+                    devtools, whichever you prefer!
+                </p>
+                <h1>The "action" schema</h1>
+                <p>
+                    This is the schema that validates your returned action in
+                    the code, which is consumed by ajv, a json validation
+                    library that follows the JSON spec. It is a little hard to
+                    read, so do check the snippets as well.
+                </p>
                 <code class="schema-code-help">{{ actionSchema }}</code>
                 <h1>Snippets</h1>
+                <p>
+                    Helpful snippets (also accessible via Ctrl + Space and
+                    typing "action")
+                </p>
                 <div
                     class="snippet-area-help"
                     v-for="(val, key) in actionSnippets"
@@ -34,6 +51,35 @@
                     </section>
                     <code class="snippet-code-help">{{ val }}</code>
                 </div>
+            </ui-modal>
+            <ui-icon-button
+                @click="onShowLocalStorageCode"
+                type="secondary"
+                class="editor-controls__icon"
+                icon="storage"
+            ></ui-icon-button>
+            <ui-modal
+                ref="localStorageCode"
+                title="Code backed up in browser (localstorage)"
+            >
+                <h1>Auto-backup codes</h1>
+                <p>
+                    This is the code saved in the browser's localstorage.
+                    Hopefully it will help to save you from losing things.
+                </p>
+                <ui-select
+                    label="Choose by date"
+                    :options="localStorageCodes"
+                    v-model="selectedLocalStorageItemToShow"
+                ></ui-select>
+                <code
+                    v-if="
+                        selectedLocalStorageItemToShow &&
+                            selectedLocalStorageItemToShow.value
+                    "
+                    class="backup-code"
+                    >{{ selectedLocalStorageItemToShow.value }}</code
+                >
             </ui-modal>
         </div>
     </div>
@@ -58,7 +104,9 @@ import 'ace-builds/src-noconflict/ext-keybinding_menu'
 import 'ace-builds/src-noconflict/mode-javascript'
 import 'ace-builds/webpack-resolver'
 
-import { UiIconButton, UiModal } from 'keen-ui'
+import { UiIconButton, UiModal, UiSelect } from 'keen-ui'
+
+import moment from 'moment'
 
 import prettier from 'prettier/standalone'
 import parserBabylon from 'prettier/parser-babylon'
@@ -79,8 +127,22 @@ import startingUserCode from '!!raw-loader!./iframe-isolated/starting-user-code'
 // import ace from 'ace-builds/src/mode-javascript'
 // import '!file-loader!ace-builds/src/'
 
+moment.locale('en', {
+    longDateFormat: {
+        LT: 'h:mm:ss A',
+        // L: "MM/DD/YYYY",
+        // l: "M/D/YYYY",
+        // LL: "MMMM Do YYYY",
+        // ll: "MMM D YYYY",
+        // LLL: "MMMM Do YYYY LT",
+        // lll: "MMM D YYYY LT",
+        // LLLL: "dddd, MMMM Do YYYY LT",
+        // llll: "ddd, MMM D YYYY LT"
+    },
+})
+
 export default {
-    components: { UiIconButton, UiModal },
+    components: { UiIconButton, UiModal, UiSelect },
     props: {
         defaultText: {
             type: String,
@@ -88,6 +150,12 @@ export default {
         },
     },
     methods: {
+        onShowLocalStorageCode() {
+            this.loadedLocalStorageCode =
+                window.localStorage.getItem('code') ||
+                'Oops, no code has been saved yet!'
+            this.$refs.localStorageCode.open()
+        },
         onShowReturnObjects() {
             this.$refs.returnObjects.open()
         },
@@ -188,7 +256,7 @@ export default {
             ])
         )
 
-        this.ace.editor.session.on('change', function(text) {
+        this.ace.editor.session.on('change', text => {
             this.text = text
 
             // e.session.insert(t.start, t.lines.join('\n'))
@@ -218,18 +286,47 @@ export default {
                             a.type !== 'warning'
                     ).length === 0
             ) {
+                let code = this.ace.editor.session.getValue()
+
+                let newValue = [
+                    {
+                        label: moment().calendar(),
+                        value: code,
+                    },
+                    ...this.localStorageCodes,
+                ].slice(0, 100)
+                this.localStorageCodes = newValue
+
+                window.localStorage.setItem('code', JSON.stringify(newValue))
+
                 this.$emit('code-change', {
-                    getText: () => this.ace.editor.session.getValue(),
+                    getText: () => code,
                 })
+                this.hasEmittedChange = true
             }
         })
 
         // this.ace.editor.session.on('changeAnnotation', function(a, b) {
         //     console.log('changeAnnotation')
         // })
+
+        // because we want some initial emission of code change
+        // if (!this.hasEmittedChange) {
+        //     this.hasEmittedChange = true
+
+        //     this.$emit('code-change', {
+        //         getText: () => this.ace.editor.session.getValue(),
+        //     })
+        // }
     },
     data: () => ({
         text: '',
+        selectedLocalStorageItemToShow: '',
+        localStorageCodes: JSON.parse(
+            window.localStorage.getItem('code') || '[]'
+        ),
+        loadedLocalStorageCode: '',
+        hasEmittedChange: false,
         ace: {
             editor: null,
         },
@@ -267,6 +364,10 @@ export default {
 }
 
 .schema-code-help {
+    white-space: pre-wrap;
+}
+
+.backup-code {
     white-space: pre-wrap;
 }
 

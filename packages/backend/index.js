@@ -2,6 +2,7 @@ const app = require('http').createServer(handler)
 const io = require('socket.io')(app)
 const fs = require('fs')
 const crypto = require('crypto')
+var generateName = require('sillyname');
 
 app.listen(14337)
 
@@ -27,7 +28,7 @@ io.on('connection', function(socket) {
             .digest('hex')
             .substr(0, 8)
 
-    const userId = getHash('userId')
+    const userId = generateName();
     const roomId = getHash('roomId')
 
     users[userId] = {
@@ -69,7 +70,7 @@ io.on('connection', function(socket) {
     }
     const emitUsersInRoom = () => {
         toUsersInRoomId(users[userId].currentRoomId, userName => {
-            users[userId].socket.emit('users-in-room', getUsersInRoom())
+            users[userName].socket.emit('users-in-room', getUsersInRoom())
         })
     }
     socket.on('req:users-in-room', function() {

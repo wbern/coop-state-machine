@@ -21,11 +21,8 @@ const createWorkerManager = (name, initialWorkerCode = undefined) => {
             const workerBlob = new Blob(
                 [
                     boilerplateWorkerCode.replace(
-                        /\/\* USER_CODE \*\/|'USER_CODE'/,
-                        workerCode.replace(
-                            /\n/g,
-                            '\n' + new Array(12).fill(' ').join('')
-                        )
+                        /\s*\/\* USER_CODE \*\//,
+                        workerCode
                     ),
                 ],
                 {

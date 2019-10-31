@@ -8,6 +8,7 @@
         "test": "jest"
     },
     "devDependencies": {
+        "popular-movie-quotes": "^1.2.0",
         "rxjs": "^6.5.3",
         "@babel/core": "^7.6.2",
         "ace-builds": "^1.4.6",
@@ -40,6 +41,7 @@
         "vue-template-compiler": "^2.6.10",
         "vuex": "^3.1.1",
         "vuex-undo-redo": "^1.1.4",
+        "moment": "^2.24.0",
         "webpack": ">=2",
         "webpack-cli": ">=2",
         "json5-loader": "^3.0.0",
