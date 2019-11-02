@@ -6,9 +6,11 @@
         <div class="center">
             <ui-icon-button
                 @click="onSkipToBack"
-                :disabled="!canUndo || currentTurn === 0"
-                type="secondary"
+                type="primary"
+                :disabled="rewindToTurnDisabled"
+                :color="rewindToTurnDisabled ? 'default' : 'primary'"
                 class="city-controls__icon"
+                tooltip="Rewind / start over to a specific turn"
                 icon="restore"
             ></ui-icon-button>
             <ui-modal ref="rewindModal" title="Rewind back to turn..">
@@ -40,29 +42,38 @@
             </ui-modal>
             <ui-icon-button
                 @click="onBack"
-                :disabled="!canUndo || currentTurn === 0"
-                type="secondary"
+                :disabled="rewindOneDisabled"
+                type="primary"
+                :color="rewindOneDisabled ? 'default' : 'primary'"
                 class="city-controls__icon"
+                tooltip="Rewind one turn"
                 icon="skip_previous"
             ></ui-icon-button>
             <ui-icon-button
                 @click="onPlay"
-                :disabled="true"
                 type="primary"
+                :disabled="playDisabled"
+                :color="playDisabled ? 'default' : 'primary'"
                 class="city-controls__icon"
+                tooltip="Play turns"
                 icon="play_arrow"
             ></ui-icon-button>
             <ui-icon-button
                 @click="onForward"
-                :disabled="!(canRedo || canTick)"
-                type="secondary"
+                type="primary"
+                :disabled="skipOneDisabled"
+                :color="skipOneDisabled ? 'default' : 'primary'"
                 class="city-controls__icon"
+                tooltip="Go forward one turn"
                 icon="skip_next"
             ></ui-icon-button>
             <ui-icon-button
                 @click="onSkipToEnd"
-                type="secondary"
+                type="primary"
+                :disabled="skipToTurnDisabled"
+                :color="skipToTurnDisabled ? 'default' : 'primary'"
                 class="city-controls__icon city-controls__icon--mirror"
+                tooltip="Skip to a specific turn"
                 icon="restore"
             ></ui-icon-button>
             <ui-modal ref="forwardModal" title="Skip to turn..">
@@ -104,11 +115,29 @@ export default {
     props: {
         currentTurn: Number,
         canTick: Boolean,
+        canRewind: Boolean,
     },
     data: () => ({
         rewindToTurnNumber: 0,
         forwardToTurnNumber: 10,
     }),
+    computed: {
+        rewindToTurnDisabled() {
+            return !this.canRewind || !this.canUndo || this.currentTurn === 0
+        },
+        rewindOneDisabled() {
+            return !this.canRewind || !this.canUndo || this.currentTurn === 0
+        },
+        playDisabled() {
+            return true || !this.canTick
+        },
+        skipOneDisabled() {
+            return !(this.canRedo || this.canTick)
+        },
+        skipToTurnDisabled() {
+            return !(this.canRedo || this.canTick)
+        },
+    },
     methods: {
         onRewindToTurnRequest() {
             this.$emit('tick-to-turn-request', this.rewindToTurnNumber)
@@ -121,7 +150,7 @@ export default {
         onSkipToBack() {
             this.$refs['rewindModal'].open()
             setTimeout(() => {
-                this.$refs['rewindModal'].$el.focus();
+                this.$refs['rewindModal'].$el.focus()
                 this.$refs['rewindModal'].$el.querySelector('input').focus()
             }, 10)
             // this.$emit('start-over-request')
@@ -135,7 +164,7 @@ export default {
         onSkipToEnd() {
             this.$refs['forwardModal'].open()
             setTimeout(() => {
-                this.$refs['forwardModal'].$el.focus();
+                this.$refs['forwardModal'].$el.focus()
                 this.$refs['forwardModal'].$el.querySelector('input').focus()
             }, 10)
         },

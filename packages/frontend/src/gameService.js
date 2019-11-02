@@ -38,6 +38,7 @@ export const gameService = new (function() {
     }
 
     this.onStartOver = new Subject()
+    this.onGameBusyChange = new Subject()
     this.startOver = function(vueInstance) {
         console.log('going back to start')
         vueInstance.$store.commit('emptyState')
@@ -97,6 +98,8 @@ export const gameService = new (function() {
         vueInstance,
         requestedTurnNumber = vueInstance.$store.state.currentTurn + 1
     ) {
+        this.onGameBusyChange.next(true)
+
         if (requestedTurnNumber > vueInstance.$store.state.currentTurn) {
             do {
                 if (vueInstance.canRedo) {
@@ -132,6 +135,8 @@ export const gameService = new (function() {
             logService.log(
                 'END OF TURN #' + vueInstance.$store.state.currentTurn
             )
+
+            this.onGameBusyChange.next(false)
         }
     }
 

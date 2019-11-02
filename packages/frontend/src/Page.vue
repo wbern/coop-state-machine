@@ -4,7 +4,8 @@
             <City></City>
             <div class="city-controls">
                 <Controls
-                    :can-tick="canTick"
+                    :can-tick="canTick && !gameBusy"
+                    :can-rewind="!gameBusy"
                     :current-turn="this.$store.state.currentTurn"
                     @tick-to-turn-request="onTickToTurnRequest"
                     @rewind-request="onRewindRequest"
@@ -90,8 +91,13 @@ export default {
         gameService.onStartOver.subscribe(() => {
             this.applyCodeChanges()
         })
+
+        gameService.onGameBusyChange.subscribe((busy) => {
+            this.gameBusy = busy;
+        })
     },
     data: () => ({
+        gameBusy: false,
         roomId: null,
         userCount: 0,
         userId: null,
