@@ -99,7 +99,7 @@ export const runnerService = new (function() {
         }
 
         this.userCodes[name] = workerCode =
-            '// ' + movieQuotes.getRandomQuote() + '\n' + workerCode
+            workerCode + '\n\n// ' + movieQuotes.getRandomQuote()
 
         this.syncSandbox({ name })
     }

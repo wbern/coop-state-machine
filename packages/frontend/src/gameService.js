@@ -1,7 +1,7 @@
 // Important note: gameService must interact
 // with the vuex store for data that should be undo/redo-able
 
-import { Subject } from 'rxjs'
+import { Subject, BehaviorSubject } from 'rxjs'
 
 import runnerService from './runnerService'
 import logService from './logService'
@@ -38,7 +38,7 @@ export const gameService = new (function() {
     }
 
     this.onStartOver = new Subject()
-    this.onGameBusyChange = new Subject()
+    this.onGameBusyChange = new BehaviorSubject()
     this.startOver = function(vueInstance) {
         console.log('going back to start')
         vueInstance.$store.commit('emptyState')
@@ -73,6 +73,11 @@ export const gameService = new (function() {
         vueInstance,
         requestedTurnNumber = vueInstance.$store.state.currentTurn - 1
     ) {
+        let gameAlreadyBusy = this.onGameBusyChange.value
+        if (!gameAlreadyBusy) {
+            this.onGameBusyChange.next(true)
+        }
+
         if (requestedTurnNumber === 0) {
             // go back to start
             this.startOver(vueInstance)
@@ -92,50 +97,106 @@ export const gameService = new (function() {
                 }
             } while (vueInstance.$store.state.currentTurn > requestedTurnNumber)
         }
+
+        if (!gameAlreadyBusy) {
+            this.onGameBusyChange.next(false)
+        }
     }
 
     this.nextTurn = async function(
         vueInstance,
         requestedTurnNumber = vueInstance.$store.state.currentTurn + 1
     ) {
-        this.onGameBusyChange.next(true)
+        let gameAlreadyBusy = this.onGameBusyChange.value
+        if (!gameAlreadyBusy) {
+            this.onGameBusyChange.next(true)
+        }
 
-        if (requestedTurnNumber > vueInstance.$store.state.currentTurn) {
-            do {
-                if (vueInstance.canRedo) {
-                    console.log('redoing one step')
-                    vueInstance.redo()
-                } else {
-                    // tick
-                    console.log('ticking one step')
-                    vueInstance.$store.commit('beginNextTurn')
-                    logService.log(
-                        'TURN #' + vueInstance.$store.state.currentTurn
-                    )
+        while (requestedTurnNumber > vueInstance.$store.state.currentTurn) {
+            if (vueInstance.canRedo) {
+                console.log('redoing one step')
+                vueInstance.redo()
+            } else {
+                // tick
+                console.log('ticking one step')
+                vueInstance.$store.commit('beginNextTurn')
+                logService.log('TURN #' + vueInstance.$store.state.currentTurn)
 
-                    let lastKnownState
+                let lastKnownState
 
-                    await runnerService.tick(
-                        this.generateUsefulGameState(
-                            vueInstance.$store.state
-                        ),
-                        (name, action, lastKnownState) => {
-                            lastKnownState = this.processAction(
-                                name,
-                                action,
-                                vueInstance.$store
-                            )
-                            return lastKnownState
-                        },
-                        this.disabledUserScripts
-                    )
-                }
-            } while (vueInstance.$store.state.currentTurn < requestedTurnNumber)
+                await runnerService.tick(
+                    this.generateUsefulGameState(vueInstance.$store.state),
+                    (name, action, lastKnownState) => {
+                        lastKnownState = this.processAction(
+                            name,
+                            action,
+                            vueInstance.$store
+                        )
+                        return lastKnownState
+                    },
+                    this.disabledUserScripts
+                )
+            }
 
             logService.log(
                 'END OF TURN #' + vueInstance.$store.state.currentTurn
             )
+        }
 
+        if (!gameAlreadyBusy) {
+            this.onGameBusyChange.next(false)
+        }
+    }
+
+    this.pausePlay = function() {
+        this.pauseRequested = true
+    }
+
+    // like nextTurn but with delay
+    this.playTurns = async function(vueInstance, requestedTurnNumber, delayMs) {
+        let gameAlreadyBusy = this.onGameBusyChange.value
+        if (!gameAlreadyBusy) {
+            this.onGameBusyChange.next(true)
+        }
+
+        this.pauseRequested = false
+
+        while (
+            requestedTurnNumber > vueInstance.$store.state.currentTurn &&
+            !this.pauseRequested
+        ) {
+            const startMs = performance.now()
+
+            await this.nextTurn(
+                vueInstance,
+                vueInstance.$store.state.currentTurn + 1
+            )
+
+            const executionTimeMs = startMs - performance.now()
+
+            if (executionTimeMs > delayMs) {
+                console.warn(
+                    'turn took longer than the requested delay, artificial delays are removed to compensate as usual but the play is now slower than usual. (' +
+                        executionTimeMs +
+                        'ms vs the requested ' +
+                        delayMs +
+                        ')'
+                )
+            }
+
+            if (!this.pauseRequested) {
+                // a sleep function
+                await new Promise(resolve =>
+                    setTimeout(resolve, Math.max(0, delayMs - executionTimeMs))
+                )
+            } else {
+                console.log(
+                    'stopped play execution because the user requested it.'
+                )
+            }
+        }
+
+        if (!gameAlreadyBusy) {
             this.onGameBusyChange.next(false)
         }
     }

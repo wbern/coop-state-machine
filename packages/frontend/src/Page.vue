@@ -4,12 +4,16 @@
             <City></City>
             <div class="city-controls">
                 <Controls
-                    :can-tick="canTick && !gameBusy"
-                    :can-rewind="!gameBusy"
+                    :can-tick="canTick && !gameBusy && !!userId"
+                    :can-rewind="!gameBusy && !!userId"
+                    :can-play="canTick && !gameBusy && !!userId"
+                    :can-pause="gameBusy && playInProgress && !!userId"
                     :current-turn="this.$store.state.currentTurn"
                     @tick-to-turn-request="onTickToTurnRequest"
                     @rewind-request="onRewindRequest"
                     @tick-request="onTickRequest"
+                    @play-request="onPlayRequest"
+                    @pause-request="onPauseRequest"
                 ></Controls>
             </div>
             <div class="output-window">
@@ -92,11 +96,12 @@ export default {
             this.applyCodeChanges()
         })
 
-        gameService.onGameBusyChange.subscribe((busy) => {
-            this.gameBusy = busy;
+        gameService.onGameBusyChange.subscribe(busy => {
+            this.gameBusy = busy
         })
     },
     data: () => ({
+        playInProgress: false,
         gameBusy: false,
         roomId: null,
         userCount: 0,
@@ -130,6 +135,14 @@ export default {
         },
         async onTickRequest() {
             await gameService.nextTurn(this)
+        },
+        async onPlayRequest(options) {
+            this.playInProgress = true
+            await gameService.playTurns(this, options.turn, options.delay)
+            this.playInProgress = false
+        },
+        async onPauseRequest() {
+            await gameService.pausePlay()
         },
         applyCodeChanges() {
             if (this.lastCodeChangeSinceStart) {

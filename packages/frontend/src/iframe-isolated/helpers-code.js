@@ -3,16 +3,21 @@ var getHelpersObject = (gameState, playerState, lastAction) => ({
         let tallestNumber = 0
         let coords = null
 
-        gameState.worldCoords.forEach((cols, x) => {
-            cols.forEach((row, y) => {
-                if (row.length > tallestNumber || coords === null) {
-                    tallestNumber = row.length
-                    coords = {
-                        x,
-                        y,
+        gameState.worldCoords.forEach((col, x) => {
+            if (col) {
+                col.forEach((row, y) => {
+                    if (
+                        row &&
+                        (row.length > tallestNumber || coords === null)
+                    ) {
+                        tallestNumber = row.length
+                        coords = {
+                            x,
+                            y,
+                        }
                     }
-                }
-            })
+                })
+            }
         })
 
         return coords

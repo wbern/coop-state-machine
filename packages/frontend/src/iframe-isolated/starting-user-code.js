@@ -2,12 +2,10 @@ function main(helpers, gameState, playerState, lastAction) {
     // Hi there! Want to get started?
     // Focus this editor, press `Ctrl + Space` and type "action" to get suggestions.
 
-    debugger;
-
     if (gameState.currentTurn === 1) {
         return {
             action: 'move',
-            coords: gameState.tallestBuilding
+            coords: helpers.getTallestBuilding()
         }
     }
 

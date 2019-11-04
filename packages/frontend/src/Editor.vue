@@ -6,18 +6,21 @@
                 @click="onFormatRequest"
                 type="secondary"
                 class="editor-controls__icon"
+                tooltip="Apply Prettier on code"
                 icon="sort_by_alpha"
             ></ui-icon-button>
             <ui-icon-button
                 @click="onShowKeybindingsRequest"
                 type="secondary"
                 class="editor-controls__icon"
+                tooltip="Show keybindings for editor textbox (Ace)"
                 icon="keyboard"
             ></ui-icon-button>
             <ui-icon-button
                 @click="onShowReturnObjects"
                 type="secondary"
                 class="editor-controls__icon"
+                tooltip="Show schema for returning valid action objects, plus misc. other useful information"
                 icon="help"
             ></ui-icon-button>
             <ui-modal ref="returnObjects" title="JSON objects">
@@ -57,7 +60,40 @@
                 type="secondary"
                 class="editor-controls__icon"
                 icon="storage"
+                tooltip="Restore code that was lost during browser refresh and whatnot."
             ></ui-icon-button>
+            <ui-icon-button
+                has-dropdown
+                type="secondary"
+                class="editor-controls__icon"
+                icon="done"
+                ref="bla"
+                tooltip="Commit and upload the code changes to the room."
+            >
+                <div class="my-custom-dropdown" slot="dropdown">
+                    <ui-textbox
+                        :autofocus="true"
+                        :multiLine="true"
+                        :maxlength="50"
+                        :enforceMaxlength="true"
+                        label="Commit message"
+                        type="text"
+                        v-model="commitMessage"
+                    ></ui-textbox>
+                    <ui-button
+                        raised
+                        class="editor-controls__icon"
+                        icon="done"
+                        type="primary"
+                        color="primary"
+                        :disabled="!commitMessage"
+                        :icon-position="'left'"
+                        :size="'normal'"
+                        @click="onCommit"
+                        >Commit
+                    </ui-button>
+                </div></ui-icon-button
+            >
             <ui-modal
                 ref="localStorageCode"
                 title="Code backed up in browser (localstorage)"
@@ -104,7 +140,7 @@ import 'ace-builds/src-noconflict/ext-keybinding_menu'
 import 'ace-builds/src-noconflict/mode-javascript'
 import 'ace-builds/webpack-resolver'
 
-import { UiIconButton, UiModal, UiSelect } from 'keen-ui'
+import { UiIconButton, UiModal, UiSelect, UiTextbox, UiButton } from 'keen-ui'
 
 import moment from 'moment'
 
@@ -142,7 +178,7 @@ moment.locale('en', {
 })
 
 export default {
-    components: { UiIconButton, UiModal, UiSelect },
+    components: { UiIconButton, UiModal, UiSelect, UiTextbox, UiButton },
     props: {
         defaultText: {
             type: String,
@@ -150,6 +186,9 @@ export default {
         },
     },
     methods: {
+        onCommit() {
+            this.$refs['bla'].closeDropdown();
+        },
         onShowLocalStorageCode() {
             this.loadedLocalStorageCode =
                 window.localStorage.getItem('code') ||
@@ -320,6 +359,7 @@ export default {
         // }
     },
     data: () => ({
+        commitMessage: '',
         text: '',
         selectedLocalStorageItemToShow: '',
         localStorageCodes: JSON.parse(
@@ -377,5 +417,10 @@ export default {
 
 .snippet-area-help {
     margin-bottom: 8px;
+}
+
+.my-custom-dropdown {
+    padding: 8px;
+    min-width: 300px;
 }
 </style>
