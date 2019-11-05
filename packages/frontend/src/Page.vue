@@ -1,50 +1,65 @@
 <template>
-    <div class="page-wrapper">
-        <div class="left-wrapper">
-            <City></City>
-            <div class="city-controls">
-                <Controls
-                    :can-tick="canTick && !gameBusy && !!userId"
-                    :can-rewind="!gameBusy && !!userId"
-                    :can-play="canTick && !gameBusy && !!userId"
-                    :can-pause="gameBusy && playInProgress && !!userId"
-                    :current-turn="this.$store.state.currentTurn"
-                    @tick-to-turn-request="onTickToTurnRequest"
-                    @rewind-request="onRewindRequest"
-                    @tick-request="onTickRequest"
-                    @play-request="onPlayRequest"
-                    @pause-request="onPauseRequest"
-                ></Controls>
-            </div>
-            <div class="output-window">
-                <Output></Output>
-            </div>
+    <div class="page-wrapper-wrapper">
+        <div class="page-disconnected-overlay" v-if="!connectedToSocketServer">
+            <h1>Connecting to the socket server...</h1>
+            <ui-icon
+                :useSvg="false"
+                class="page-disconnected-overlay__connecting-icon"
+                icon="sync"
+            ></ui-icon>
         </div>
-        <ui-tabs type="icon-and-text" fullwidth fullheight ref="controlTabs">
-            <ui-tab
-                :id="tab.id"
-                :key="tab.id"
-                :title="
-                    tab.title +
-                        (tab.id === 'othersCode'
-                            ? ' (' + Math.max(0, userCount - 1) + ')'
-                            : '')
-                "
-                v-for="tab in controlTabs"
+        <div class="page-wrapper">
+            <div class="left-wrapper">
+                <City></City>
+                <div class="city-controls">
+                    <Controls
+                        :can-tick="canTick && !gameBusy && !!userId"
+                        :can-rewind="!gameBusy && !!userId"
+                        :can-play="canTick && !gameBusy && !!userId"
+                        :can-pause="gameBusy && playInProgress && !!userId"
+                        :current-turn="this.$store.state.currentTurn"
+                        @tick-to-turn-request="onTickToTurnRequest"
+                        @rewind-request="onRewindRequest"
+                        @tick-request="onTickRequest"
+                        @play-request="onPlayRequest"
+                        @pause-request="onPauseRequest"
+                    ></Controls>
+                </div>
+                <div class="output-window">
+                    <Output></Output>
+                </div>
+            </div>
+            <ui-tabs
+                type="icon-and-text"
+                fullwidth
+                fullheight
+                ref="controlTabs"
             >
-                <ui-icon :icon="tab.icon" slot="icon"></ui-icon>
-                <!-- {{ tab.title }} -->
-                <div class="tab-contents" v-if="tab.id === 'userCode'">
-                    <Editor
-                        @code-change="onCodeChange($event, tab.id)"
-                    ></Editor>
-                </div>
-                <div class="tab-contents" v-if="tab.id === 'othersCode'">
-                    <Multiplayer></Multiplayer>
-                </div>
-                <!-- <div class="tab-contents" v-if="tab.id === 'gameConfig'"></div> -->
-            </ui-tab>
-        </ui-tabs>
+                <ui-tab
+                    :id="tab.id"
+                    :key="tab.id"
+                    :title="
+                        tab.title +
+                            (tab.id === 'othersCode'
+                                ? ' (' + Math.max(0, userCount - 1) + ')'
+                                : '')
+                    "
+                    v-for="tab in controlTabs"
+                >
+                    <ui-icon :icon="tab.icon" slot="icon"></ui-icon>
+                    <!-- {{ tab.title }} -->
+                    <div class="tab-contents" v-if="tab.id === 'userCode'">
+                        <Editor
+                            @code-change="onCodeChange($event, tab.id)"
+                        ></Editor>
+                    </div>
+                    <div class="tab-contents" v-if="tab.id === 'othersCode'">
+                        <Multiplayer></Multiplayer>
+                    </div>
+                    <!-- <div class="tab-contents" v-if="tab.id === 'gameConfig'"></div> -->
+                </ui-tab>
+            </ui-tabs>
+        </div>
     </div>
 </template>
 <script>
@@ -59,6 +74,7 @@ import gameService from './gameService'
 import logService from './logService'
 
 import multiplayerService from './multiplayerService'
+import socketService from './socketService'
 
 import { UiAlert, UiButton, UiTabs, UiTab, UiIcon } from 'keen-ui'
 
@@ -99,8 +115,13 @@ export default {
         gameService.onGameBusyChange.subscribe(busy => {
             this.gameBusy = busy
         })
+
+        socketService.connectedChange.subscribe(connected => {
+            this.connectedToSocketServer = connected
+        })
     },
     data: () => ({
+        connectedToSocketServer: false,
         playInProgress: false,
         gameBusy: false,
         roomId: null,
@@ -171,6 +192,35 @@ export default {
 }
 </script>
 <style scoped>
+.page-disconnected-overlay {
+    position: fixed;
+    background: rgba(255, 255, 255, 0.8);
+    z-index: 9999;
+    height: 100%;
+    width: 100%;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.page-disconnected-overlay__connecting-icon {
+    animation-name: connecting-icon;
+    animation-duration: 1.5s;
+    animation-iteration-count: infinite;
+    font-size: 48px;
+}
+
+@keyframes connecting-icon {
+    0% {
+        transform: rotate(360deg);
+    }
+    100% {
+        transform: rotate(0deg);
+    }
+}
+
 .city-controls {
     flex: 0.1 0.1;
     width: 100%;
@@ -187,6 +237,12 @@ export default {
     flex: 1;
     display: flex;
     flex-direction: column;
+}
+.page-wrapper-wrapper {
+    height: 100%;
+    flex: 1;
+    display: flex;
+    flex-direction: row;
 }
 .page-wrapper {
     height: 100%;
