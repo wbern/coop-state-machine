@@ -65,10 +65,12 @@
             <ui-icon-button
                 has-dropdown
                 type="secondary"
+                color="primary"
                 class="editor-controls__icon"
                 icon="done"
-                ref="bla"
-                tooltip="Commit and upload the code changes to the room."
+                :disabled="!uncommittedCodeExists"
+                ref="commitButton"
+                tooltip="Commit and upload the code changes."
             >
                 <div class="my-custom-dropdown" slot="dropdown">
                     <ui-textbox
@@ -98,16 +100,35 @@
                 ref="localStorageCode"
                 title="Code backed up in browser (localstorage)"
             >
-                <h1>Auto-backup codes</h1>
+                <h1>Code backups</h1>
                 <p>
-                    This is the code saved in the browser's localstorage.
-                    Hopefully it will help to save you from losing things.
+                    Here you can see the code saved in the browser's
+                    localstorage, saved both automatically and on commit (along
+                    with the commit message).
                 </p>
-                <ui-select
-                    label="Choose by date"
-                    :options="localStorageCodes"
-                    v-model="selectedLocalStorageItemToShow"
-                ></ui-select>
+                <p>Hopefully this will help to save you from losing things.</p>
+                <div class="editor-controls__delete-backups-controls">
+                    <ui-select
+                        label="Pick a restore point"
+                        class="editor-controls__delete-backups-select"
+                        :options="localStorageCodes"
+                        v-model="selectedLocalStorageItemToShow"
+                    ></ui-select>
+                    <ui-button
+                        raised
+                        class="editor-controls__icon"
+                        icon="delete_forever"
+                        type="primary"
+                        color="primary"
+                        :disabled="
+                            !localStorageCodes || localStorageCodes.length === 0
+                        "
+                        :icon-position="'left'"
+                        :size="'normal'"
+                        @click="onDeleteBackups"
+                        >Delete backups
+                    </ui-button>
+                </div>
                 <code
                     v-if="
                         selectedLocalStorageItemToShow &&
@@ -163,7 +184,7 @@ import startingUserCode from '!!raw-loader!./iframe-isolated/starting-user-code'
 // import ace from 'ace-builds/src/mode-javascript'
 // import '!file-loader!ace-builds/src/'
 
-moment.locale('en', {
+moment.updateLocale('en', {
     longDateFormat: {
         LT: 'h:mm:ss A',
         // L: "MM/DD/YYYY",
@@ -186,8 +207,50 @@ export default {
         },
     },
     methods: {
+        onDeleteBackups() {
+            window.localStorage.setItem('code', '[]')
+            this.selectedLocalStorageItemToShow = ''
+            this.localStorageCodes = JSON.parse(
+                window.localStorage.getItem('code') || '[]'
+            )
+            this.loadedLocalStorageCode = ''
+
+            this.$refs['localStorageCode'].close()
+        },
+        backupCode(code, customMessage = '') {
+            if (startingUserCode === code) {
+                // no need to backup the sample code
+                return
+            }
+
+            let newValue = [
+                {
+                    label:
+                        moment().calendar() +
+                        (customMessage !== '' ? ': ' + customMessage : ''),
+                    value: code,
+                },
+                ...this.localStorageCodes,
+            ].slice(0, 100)
+            this.localStorageCodes = newValue
+
+            window.localStorage.setItem('code', JSON.stringify(newValue))
+        },
         onCommit() {
-            this.$refs['bla'].closeDropdown();
+            this.$refs['commitButton'].closeDropdown()
+
+            const code = this.ace.editor.session.getValue()
+            this.backupCode(code, this.commitMessage)
+
+            this.commitMessage = ''
+
+            this.$emit('code-change', {
+                getText: () => code,
+            })
+
+            this.lastCommittedCode = code
+            this.uncommittedCodeExists = this.lastCommittedCode !== code
+            this.hasEmittedChange = true
         },
         onShowLocalStorageCode() {
             this.loadedLocalStorageCode =
@@ -311,7 +374,7 @@ export default {
 
         this.ace.editor.session.on('tokenizerUpdate', (a, e) => {
             // code has been parsed and annotations (warnings/errors) have been introduced
-            if (
+            this.codeHasErrors =
                 this.ace.editor.session &&
                 this.ace.editor.session
                     .getAnnotations()
@@ -323,25 +386,18 @@ export default {
                             // a.column === -1 &&
                             // a.row === -1 &&
                             a.type !== 'warning'
-                    ).length === 0
-            ) {
-                let code = this.ace.editor.session.getValue()
+                    ).length > 0
 
-                let newValue = [
-                    {
-                        label: moment().calendar(),
-                        value: code,
-                    },
-                    ...this.localStorageCodes,
-                ].slice(0, 100)
-                this.localStorageCodes = newValue
+            if (!this.codeHasErrors) {
+                if (this.lastCommittedCode === null) {
+                    this.onCommit()
+                } else {
+                    let code = this.ace.editor.session.getValue()
 
-                window.localStorage.setItem('code', JSON.stringify(newValue))
+                    this.uncommittedCodeExists = this.lastCommittedCode !== code
 
-                this.$emit('code-change', {
-                    getText: () => code,
-                })
-                this.hasEmittedChange = true
+                    this.backupCode(code)
+                }
             }
         })
 
@@ -359,6 +415,8 @@ export default {
         // }
     },
     data: () => ({
+        lastCommittedCode: null,
+        uncommittedCodeExists: false,
         commitMessage: '',
         text: '',
         selectedLocalStorageItemToShow: '',
@@ -393,6 +451,17 @@ export default {
 
 .editor-controls__icon {
     margin: 0 4px;
+}
+
+.editor-controls__delete-backups-controls {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.editor-controls__delete-backups-select {
+    flex: 1;
+    padding-right: 8px;
 }
 
 .editor-controls {
