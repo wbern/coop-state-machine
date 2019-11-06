@@ -1,21 +1,36 @@
-const app = require('http').createServer(handler)
-const io = require('socket.io')(app)
+const express = require('express')
+const app = express()
+const http = require('http').createServer(app)
+const io = require('socket.io')(http)
 const fs = require('fs')
+const path = require('path')
 const crypto = require('crypto')
-var generateName = require('sillyname');
+const generateName = require('sillyname')
 
-app.listen(14337)
-
-function handler(req, res) {
-    // fs.readFile(__dirname + '/index.html', function(err, data) {
-    //     if (err) {
-    //         res.writeHead(500)
-    //         return res.end('Error loading index.html')
-    //     }
-    //     res.writeHead(200)
-    //     res.end(data)
-    // })
+const serveOptions = {
+    setHeaders: (res, path, stat) => {
+        res.header(
+            'Cache-Control',
+            'private, no-cache, no-store, must-revalidate'
+        )
+        res.header('Expires', '-1')
+        res.header('Pragma', 'no-cache')
+    },
 }
+
+app.use(
+    '/',
+    express.static(path.join(__dirname, '../frontend/dist/'), serveOptions)
+)
+app.use(
+    '/',
+    express.static(path.join(__dirname, '../frontend/public/'), serveOptions)
+)
+// app.get('/', function(req, res) {
+//     res.sendFile(path.join(__dirname, '../frontend/dist/index.html'))
+// })
+
+http.listen(8080)
 
 const users = {}
 
@@ -28,7 +43,7 @@ io.on('connection', function(socket) {
             .digest('hex')
             .substr(0, 8)
 
-    const userId = generateName();
+    const userId = generateName()
     const roomId = getHash('roomId')
 
     users[userId] = {

@@ -8,10 +8,21 @@ module.exports = env => {
     env.BASE_URL = 'public/'
 
     return {
-        mode: 'development',
         devtool: 'source-map',
         output: {
+            filename: '[name].bundle.js',
             // publicPath: env.BASE_URL,
+        },
+        optimization: {
+            splitChunks: {
+                cacheGroups: {
+                    vendors: {
+                        test: /[\\/]node_modules[\\/]/,
+                        chunks: 'all',
+                        priority: 1,
+                    },
+                },
+            },
         },
         devServer: {
             stats: 'minimal',

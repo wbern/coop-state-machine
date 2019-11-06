@@ -8,7 +8,7 @@ import io from 'socket.io-client'
 import { BehaviorSubject } from 'rxjs'
 
 export const socketService = new (function() {
-    this.socket = io.connect('http://localhost:14337')
+    this.socket = io.connect('http://localhost:8080')
 
     this.connectedChange = new BehaviorSubject(false)
 
