@@ -85,6 +85,8 @@ export default {
         })
         multiplayerService.onCodeChange.subscribe(change => {
             Vue.set(this.userCodes, change.user, change.code)
+
+            gameService.setCode(this, change.user, change.code)
         })
     },
     methods: {

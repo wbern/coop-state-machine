@@ -50,7 +50,8 @@
                     <!-- {{ tab.title }} -->
                     <div class="tab-contents" v-if="tab.id === 'userCode'">
                         <Editor
-                            @code-change="onCodeChange($event, tab.id)"
+                            @sync-room-request="onSyncRoomRequest"
+                            @code-change="onLocalCommit($event, tab.id)"
                         ></Editor>
                     </div>
                     <div class="tab-contents" v-if="tab.id === 'othersCode'">
@@ -148,6 +149,12 @@ export default {
         canTick: false,
     }),
     methods: {
+        onSyncRoomRequest() {
+            // take in all code changes submitted by the room
+            gameService.acceptCodeChangesFromRoom(this)
+            gameService.startOver(this)
+            gameService.syncCodesToRunner(this)
+        },
         async onTickToTurnRequest(turnNumber) {
             await gameService.gotoTurn(this, turnNumber)
         },
@@ -167,20 +174,30 @@ export default {
         },
         applyCodeChanges() {
             if (this.lastCodeChangeSinceStart) {
-                gameService.setCode(this.userId, this.lastCodeChangeSinceStart)
+                gameService.acceptCodeChangesFromId(this, this.userId)
+
+                gameService.syncSpecificUserCodeToRunner(
+                    this,
+                    this.userId,
+                    false
+                )
 
                 this.lastCodeChangeSinceStart = null
                 this.canTick = true
             }
         },
-        onCodeChange(event) {
-            this.lastCodeChangeSinceStart = event.getText()
+        onLocalCommit(event) {
+            let code = event.getText()
+
+            this.lastCodeChangeSinceStart = code
 
             // we notify other users of the new code no matter what
             // the logic sequencing will need to be handled by their client
             if (this.userId) {
                 multiplayerService.sendCodeChange(this.lastCodeChangeSinceStart)
             }
+
+            gameService.setCode(this, this.userId, code)
 
             if (!gameService.isGameStarted(this)) {
                 this.applyCodeChanges()

@@ -63,6 +63,14 @@
                 tooltip="Restore code that was lost during browser refresh and whatnot."
             ></ui-icon-button>
             <ui-icon-button
+                @click="onSyncRoomCodes"
+                type="secondary"
+                color="primary"
+                class="editor-controls__icon"
+                icon="sync"
+                tooltip="Take latest code from the other users in current room, apply to the game engine, and start over."
+            ></ui-icon-button>
+            <ui-icon-button
                 has-dropdown
                 type="secondary"
                 color="primary"
@@ -70,7 +78,7 @@
                 icon="done"
                 :disabled="!uncommittedCodeExists"
                 ref="commitButton"
-                tooltip="Commit and upload the code changes."
+                tooltip="Commit your own code and upload the code changes. Afterwards, you needs to start over manually."
             >
                 <div class="my-custom-dropdown" slot="dropdown">
                     <ui-textbox
@@ -207,6 +215,9 @@ export default {
         },
     },
     methods: {
+        onSyncRoomCodes() {
+            this.$emit('sync-room-request')
+        },
         onDeleteBackups() {
             window.localStorage.setItem('code', '[]')
             this.selectedLocalStorageItemToShow = ''

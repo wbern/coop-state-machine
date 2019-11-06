@@ -22,11 +22,7 @@ export const runnerService = new (function() {
         this.store = store
     }
 
-    this.tick = function(
-        initialState = {},
-        modifyStateCallback = undefined,
-        disabledUserScripts
-    ) {
+    this.tick = function(initialState = {}, modifyStateCallback = undefined) {
         let tickOneWorkerUntilAllTicked = lastKnownState =>
             sandbox
                 .postMessageWait('tick-one-worker', lastKnownState)
@@ -89,7 +85,15 @@ export const runnerService = new (function() {
         return sandbox.doesSandboxExist()
     }
 
-    this.setCode = function(name = 'mrX', workerCode, sanitize = true) {
+    this.setCodes = function(sets, sanitize = true) {
+        Object.keys(sets).forEach(id => this.setCode(id, sets[id], sanitize))
+    }
+
+    this.setCode = function(name, workerCode, sanitize = true) {
+        if (name === undefined) {
+            throw new Error('name cannot be empty!')
+        }
+
         if (sanitize) {
             // don't pass annoying debugger; statements
             workerCode = workerCode.replace(

@@ -25,8 +25,12 @@ export const gameService = new (function() {
     this.disabledUserScriptsPending = []
     this.disabledUserScripts = []
 
+    this.userCodes = {}
+    this.userCodesPending = {}
+
     this.setDisabledUserScripts = function(vueInstance, users) {
         if (vueInstance.$store.state.currentTurn === 0) {
+            // start respecting the disabled users
             this.disabledUserScripts = [...users]
         } else {
             this.disabledUserScriptsPending = users
@@ -43,15 +47,47 @@ export const gameService = new (function() {
         console.log('going back to start')
         vueInstance.$store.commit('emptyState')
 
-        this.disabledUserScripts = [...this.disabledUserScriptsPending]
-
         this.onStartOver.next()
     }
 
-    this.setCode = function(id, code) {
-        if (this.disabledUserScripts.every(_id => _id !== id)) {
-            runnerService.setCode(id, code, false)
+    this.acceptCodeChangesFromId = function(vueInstance, id) {
+        this.userCodes[id] = this.userCodesPending[id] || this.userCodes[id]
+    }
+
+    this.acceptCodeChangesFromRoom = function(vueInstance) {
+        this.disabledUserScripts = [...this.disabledUserScriptsPending]
+        let newUserCodes = { ...this.userCodes, ...this.userCodesPending }
+
+        this.disabledUserScripts.forEach(id => {
+            newUserCodes[id]
+        })
+
+        this.userCodes = newUserCodes
+    }
+
+    this.setCode = function(vueInstance, id, code) {
+        const codeIsDisabled = !this.disabledUserScripts.every(
+            _id => _id !== id
+        )
+
+        if (codeIsDisabled || this.isGameStarted(vueInstance)) {
+            this.userCodesPending[id] = code
+        } else {
+            this.userCodes[id] = code
         }
+    }
+
+    this.syncCodesToRunner = function(vueInstance) {
+        runnerService.setCodes(this.userCodes)
+    }
+
+    // most likely to be used by the local player's code
+    this.syncSpecificUserCodeToRunner = function(
+        vueInstance,
+        id,
+        untrustedCode = true
+    ) {
+        runnerService.setCode(id, this.userCodes[id], untrustedCode)
     }
 
     this.gotoTurn = async function(vueInstance, turnNumber) {
