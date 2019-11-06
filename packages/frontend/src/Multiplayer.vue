@@ -45,7 +45,7 @@
     </div>
 </template>
 <script>
-import Vue from 'Vue'
+import Vue from 'vue'
 import {
     UiAlert,
     UiCollapsible,
