@@ -1,11 +1,16 @@
 language: node_js
 node_js:
 - '10.15.3'
-cache: npm
+# no root node_modules in rush monorepo!
+# cache: npm
+cache:
+  directories:
+  - common/temp
 script:
   - set -e
 
   - echo 'Installing...' && echo -en 'travis_fold:start:install\\r'
+  - rm -rf node_modules
   - node common/scripts/install-run-rush.js install
   - echo -en 'travis_fold:end:install\\r'
 
