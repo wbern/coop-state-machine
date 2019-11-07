@@ -2,5 +2,9 @@
     "name": "coop-state-machine",
     "engines": {
         "node": "10.15.3"
+    },
+    "scripts": {
+        "build": "",
+        "start": "node ./packages/backend/index.js"
     }
 }

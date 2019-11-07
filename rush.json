@@ -307,11 +307,11 @@
             "packageName": "coop-state-machine-backend",
             "projectFolder": "packages/backend",
             "reviewCategory": "production"
-        },
-        {
-            "packageName": "coop-state-machine-storybook",
-            "projectFolder": "packages/storybook",
-            "reviewCategory": "tools"
         }
+        // {
+        //     "packageName": "coop-state-machine-storybook",
+        //     "projectFolder": "packages/storybook",
+        //     "reviewCategory": "tools"
+        // }
     ]
 }
