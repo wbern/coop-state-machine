@@ -1,4 +1,6 @@
 {
     "$schema": "../json-schemas/action.schema.json",
-    "action": "build"
+    "action": "build",
+    "speed": 50,
+    "integration": 50
 }

@@ -140,6 +140,10 @@ export const createStore = _Vue => {
             setPlayerPosition(state, payload) {
                 state.playerStates[payload.name].position = payload.coords
             },
+            setPlayerProgress(state, payload) {
+                // turns left until build/move actions finish, etc
+                state.playerStates[payload.name].turnsLeft = payload.turnsLeft
+            },
             recordPlayerAction(state, payload) {
                 if (typeof payload.name !== 'string') {
                     throw new Error('name is not defined or is not a string')

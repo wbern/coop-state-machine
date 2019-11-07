@@ -11,6 +11,12 @@ export const gameService = new (function() {
         this.store = store
     }
 
+    this.gameConstants = {
+        initialTurns: 1,
+        maxPoints: 100,
+        turnsMultiplier: 0.1,
+    }
+
     this.generateUsefulGameState = function(state) {
         return {
             // stuff like worldCoords, etc
@@ -240,6 +246,15 @@ export const gameService = new (function() {
     this.processAction = function(name, actionObj, store) {
         this.ensurePlayerState(store, name)
 
+        const gameState = store.state
+        const playerState = gameState.playerStates[name]
+        const lastAction = playerState.actions[playerState.actions.length - 1]
+
+        let repeatAction =
+            lastAction &&
+            actionObj.action === lastAction.action &&
+            !lastAction.completed
+
         try {
             switch (actionObj.action) {
                 case 'move':
@@ -262,34 +277,233 @@ export const gameService = new (function() {
                     )
                     break
                 case 'build':
-                    if (store.state.playerStates[name].position !== undefined) {
-                        let coords = store.state.playerStates[name].position
+                    if (playerState.position !== undefined) {
+                        let coords = {
+                            ...playerState.position,
+                        }
+                        delete coords.z
 
-                        logService.log(
-                            'player ' +
-                                name +
-                                ' is building at ' +
-                                JSON.stringify(coords) +
-                                (store.state.worldCoords[coords.x][coords.y][
-                                    coords.z || 0
-                                ]
-                                    ? ' (present building will be replaced)'
-                                    : '')
-                        )
+                        let hasBottomLevel = !!gameState.worldCoords[coords.x][
+                            coords.y
+                        ][0]
 
-                        store.commit('setWorldCoords', {
-                            coords,
-                            data: {
-                                type: 'buildings/buildingTiles_000.png',
-                            },
-                        })
+                        let buildingHeight = gameState.worldCoords[coords.x][
+                            coords.y
+                        ].filter(b => b).length
 
-                        store.commit('recordPlayerAction', {
-                            name,
-                            ...actionObj,
-                            success: true,
-                            completed: true,
-                        })
+                        let nextAvailableZLevel = hasBottomLevel
+                            ? buildingHeight
+                            : 0
+
+                        let getIntegrationValueOfBuilding = building => {
+                            let integrationValueOfBuilding = 0
+
+                            if (building) {
+                                building.forEach(block => {
+                                    if (block) {
+                                        integrationValueOfBuilding +
+                                            block.integration || 0
+                                    }
+                                })
+                            }
+
+                            return integrationValueOfBuilding
+                        }
+
+                        let getBuildingHeight = building => {
+                            let height = 0
+
+                            if (building) {
+                                height = building.filter(b => b).length
+                            }
+
+                            return height
+                        }
+
+                        let integrationValueWithinRegion = 0
+                        let buildingBlocksWithinRegion = 0
+
+                        for (let x = coords.x - 1; x < coords.x + 1; x++) {
+                            if (x > 0) {
+                                for (
+                                    let y = coords.y - 1;
+                                    y < coords.y + 1;
+                                    y++
+                                ) {
+                                    if (y > 0) {
+                                        if (
+                                            gameState.worldCoords[x] &&
+                                            gameState.worldCoords[x][y]
+                                        ) {
+                                            buildingBlocksWithinRegion += getBuildingHeight(
+                                                gameState.worldCoords[x][y]
+                                            )
+                                            integrationValueWithinRegion += getIntegrationValueOfBuilding(
+                                                gameState.worldCoords[x][y]
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        let justStarted = null
+
+                        if (!repeatAction) {
+                            // it's a new action because the name changed, or the old action completed
+
+                            // validate points allocation
+                            if (
+                                typeof actionObj.speed !== 'number' &&
+                                typeof actionObj.integration === 'number'
+                            ) {
+                                actionObj.speed =
+                                    this.gameConstants.maxPoints -
+                                    Math.max(0, actionObj.integration)
+                                logService.log(
+                                    'player ' +
+                                        name +
+                                        ' did not supply speed value, setting to ' +
+                                        actionObj.speed +
+                                        '..'
+                                )
+                            } else if (
+                                typeof actionObj.speed === 'number' &&
+                                typeof actionObj.integration !== 'number'
+                            ) {
+                                actionObj.integration =
+                                    this.gameConstants.maxPoints -
+                                    Math.max(0, actionObj.speed)
+                                logService.log(
+                                    'player ' +
+                                        name +
+                                        ' did not supply integration value, setting to ' +
+                                        actionObj.integration +
+                                        '..'
+                                )
+                            } else if (
+                                typeof actionObj.speed !== 'number' ||
+                                typeof actionObj.integration !== 'number'
+                            ) {
+                                actionObj.speed = 50
+                                actionObj.integration = 50
+                                logService.log(
+                                    'player ' +
+                                        name +
+                                        ' did not supply speed and integration values, setting both to 50..'
+                                )
+                            }
+
+                            if (
+                                actionObj.speed < 0 ||
+                                actionObj.integration < 0 ||
+                                actionObj.speed + actionObj.integration >
+                                    this.gameConstants.maxPoints
+                            ) {
+                                throw new Error(
+                                    'speed and integration total cannot be over ' +
+                                        this.gameConstants.maxPoints +
+                                        ' points, and neither can be under 0. Nice try!'
+                                )
+                            }
+
+                            let initialTurnsLeft =
+                                // initial cost minus speed
+                                (this.gameConstants.maxPoints -
+                                    actionObj.speed +
+                                    // add the tech debt from previous lack of speed
+                                    buildingBlocksWithinRegion *
+                                        this.gameConstants.maxPoints -
+                                    integrationValueWithinRegion) *
+                                // speed up the process a tad
+                                this.gameConstants.turnsMultiplier
+
+                            // sanitize the number
+                            initialTurnsLeft = Math.max(
+                                Math.round(initialTurnsLeft),
+                                0
+                            )
+
+                            logService.log(
+                                'player ' +
+                                    name +
+                                    ' started building at ' +
+                                    JSON.stringify(coords) +
+                                    (hasBottomLevel
+                                        ? ' (will build vertically)'
+                                        : '') +
+                                    ', ' +
+                                    initialTurnsLeft +
+                                    ' turns left.'
+                            )
+                            justStarted = true
+
+                            // set the progress
+                            store.commit('setPlayerProgress', {
+                                name,
+                                turnsLeft: initialTurnsLeft,
+                            })
+                        } else {
+                            // we're repeating action since last time
+                            // decrease turns left by 1
+                            store.commit('setPlayerProgress', {
+                                name,
+                                turnsLeft: playerState.turnsLeft - 1,
+                            })
+                        }
+
+                        // now, is the player finished or not?
+                        if (playerState.turnsLeft === 0) {
+                            // finished, place the building
+                            store.commit('setWorldCoords', {
+                                coords: { ...coords, z: nextAvailableZLevel },
+                                data: {
+                                    type: 'buildings/buildingTiles_000.png',
+                                    integration: actionObj.integration || 0,
+                                },
+                            })
+
+                            store.commit('recordPlayerAction', {
+                                name,
+                                ...actionObj,
+                                success: true,
+                                completed: true,
+                                turnsLeft: playerState.turnsLeft,
+                            })
+
+                            logService.log(
+                                'player ' +
+                                    name +
+                                    ' finished building at ' +
+                                    JSON.stringify(coords) +
+                                    ' (block level: ' +
+                                    nextAvailableZLevel +
+                                    ')'
+                            )
+                        } else {
+                            store.commit('recordPlayerAction', {
+                                name,
+                                ...actionObj,
+                                success: true,
+                                completed: false,
+                                turnsLeft: playerState.turnsLeft,
+                            })
+
+                            if (!justStarted) {
+                                logService.log(
+                                    'player ' +
+                                        name +
+                                        ' is building at ' +
+                                        JSON.stringify(coords) +
+                                        (hasBottomLevel
+                                            ? ' (will build vertically)'
+                                            : '') +
+                                        ', ' +
+                                        playerState.turnsLeft +
+                                        ' turns left.'
+                                )
+                            }
+                        }
                     } else {
                         logService.log(
                             'player ' +
@@ -324,7 +538,7 @@ export const gameService = new (function() {
             })
         }
 
-        return store.state
+        return gameState
     }
 
     this.ensurePlayerState = function(store, name) {

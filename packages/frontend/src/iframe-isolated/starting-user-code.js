@@ -10,8 +10,11 @@ function main(helpers, gameState, playerState, lastAction) {
     }
 
     return {
-        action: 'build'
+        action: 'build',
+        speed: 100,
+        integration: 0,
     }
 
     // When you're done, try the play controls under the game view
+    // Pro tip: `console.log()` and `debugger;` statements for breakpoints work here!
 }
