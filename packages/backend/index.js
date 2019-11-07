@@ -30,7 +30,7 @@ app.use(
 //     res.sendFile(path.join(__dirname, '../frontend/dist/index.html'))
 // })
 
-http.listen(8080)
+http.listen(80)
 
 const users = {}
 
