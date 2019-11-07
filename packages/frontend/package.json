@@ -3,7 +3,7 @@
     "version": "0.1.0",
     "private": true,
     "scripts": {
-        "serve": "webpack-dev-server --mode development src/main.js",
+        "serve": "webpack-dev-server --mode development src/main.js --env.WEBSOCKET_PORT=8080",
         "build": "webpack-cli --mode production src/main.js",
         "build-watch": "webpack-cli --mode development src/main.js --watch",
         "test": "jest"

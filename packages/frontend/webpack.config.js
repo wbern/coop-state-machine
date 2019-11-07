@@ -27,6 +27,7 @@ module.exports = env => {
         devServer: {
             stats: 'minimal',
             contentBase: 'public',
+            port: 9090,
         },
         module: {
             rules: [
@@ -75,6 +76,9 @@ module.exports = env => {
             new HtmlWebpackPlugin({
                 template: env.BASE_URL + 'index.html',
             }),
+            new webpack.DefinePlugin({
+                'window.WEBSOCKET_PORT': env.WEBSOCKET_PORT
+            })
             // new webpack.EnvironmentPlugin(['BASE_URL', env.BASE_URL]),
         ],
     }

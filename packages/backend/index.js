@@ -30,7 +30,7 @@ app.use(
 //     res.sendFile(path.join(__dirname, '../frontend/dist/index.html'))
 // })
 
-http.listen(80)
+http.listen(process.env.PORT || 8080)
 
 const users = {}
 
