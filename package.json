@@ -1,3 +1,6 @@
 {
-    "name": "coop-state-machine"
+    "name": "coop-state-machine",
+    "engines": {
+        "node": "10.15.3"
+    }
 }
