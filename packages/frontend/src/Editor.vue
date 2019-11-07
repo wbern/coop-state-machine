@@ -76,7 +76,6 @@
                 color="primary"
                 class="editor-controls__icon"
                 icon="done"
-                :disabled="!uncommittedCodeExists"
                 ref="commitButton"
                 tooltip="Commit your own code and upload the code changes. Afterwards, you needs to start over manually."
             >
@@ -87,21 +86,34 @@
                         :maxlength="50"
                         :enforceMaxlength="true"
                         label="Commit message"
+                        :disabled="commitAutomatically"
                         type="text"
                         v-model="commitMessage"
                     ></ui-textbox>
-                    <ui-button
-                        raised
-                        class="editor-controls__icon"
-                        icon="done"
-                        type="primary"
-                        color="primary"
-                        :disabled="!commitMessage"
-                        :icon-position="'left'"
-                        :size="'normal'"
-                        @click="onCommit"
-                        >Commit
-                    </ui-button>
+                    <div class="commit-dropdown-controls">
+                        <ui-button
+                            raised
+                            class="editor-controls__icon"
+                            icon="done"
+                            type="primary"
+                            color="primary"
+                            :disabled="
+                                !uncommittedCodeExists ||
+                                    !commitMessage ||
+                                    commitAutomatically
+                            "
+                            :icon-position="'left'"
+                            :size="'normal'"
+                            @click="onCommit"
+                            >Commit
+                        </ui-button>
+                        <ui-checkbox
+                            style="padding: 8px 8px 0;"
+                            v-model="commitAutomatically"
+                            @input="onAutomaticCommitChange"
+                            >Commit automatically</ui-checkbox
+                        >
+                    </div>
                 </div></ui-icon-button
             >
             <ui-modal
@@ -169,7 +181,14 @@ import 'ace-builds/src-noconflict/ext-keybinding_menu'
 import 'ace-builds/src-noconflict/mode-javascript'
 import 'ace-builds/webpack-resolver'
 
-import { UiIconButton, UiModal, UiSelect, UiTextbox, UiButton } from 'keen-ui'
+import {
+    UiIconButton,
+    UiModal,
+    UiSelect,
+    UiTextbox,
+    UiButton,
+    UiCheckbox,
+} from 'keen-ui'
 
 import moment from 'moment'
 
@@ -207,7 +226,14 @@ moment.updateLocale('en', {
 })
 
 export default {
-    components: { UiIconButton, UiModal, UiSelect, UiTextbox, UiButton },
+    components: {
+        UiIconButton,
+        UiModal,
+        UiSelect,
+        UiTextbox,
+        UiButton,
+        UiCheckbox,
+    },
     props: {
         defaultText: {
             type: String,
@@ -215,6 +241,42 @@ export default {
         },
     },
     methods: {
+        onEditorTextChange() {
+            this.codeHasErrors =
+                this.ace.editor.session &&
+                this.ace.editor.session
+                    .getAnnotations()
+                    // it's nice to ignore warnings in general
+                    // but if we'd want to, we could ignore messages on row/col index -1
+                    // because they are just general warnings, and sometimes errors
+                    .filter(
+                        a =>
+                            // a.column === -1 &&
+                            // a.row === -1 &&
+                            a.type !== 'warning'
+                    ).length > 0
+
+            if (!this.codeHasErrors) {
+                if (
+                    this.lastCommittedCode === null ||
+                    this.commitAutomatically
+                ) {
+                    this.onCommit()
+                } else {
+                    let code = this.ace.editor.session.getValue()
+
+                    this.uncommittedCodeExists = this.lastCommittedCode !== code
+
+                    this.backupCode(code)
+                }
+            }
+        },
+        onAutomaticCommitChange() {
+            if(this.commitAutomatically && this.uncommittedCodeExists) {
+                // hacky, trigger editor change and take it from there
+                this.onEditorTextChange();
+            }
+        },
         onSyncRoomCodes() {
             this.$emit('sync-room-request')
         },
@@ -385,31 +447,7 @@ export default {
 
         this.ace.editor.session.on('tokenizerUpdate', (a, e) => {
             // code has been parsed and annotations (warnings/errors) have been introduced
-            this.codeHasErrors =
-                this.ace.editor.session &&
-                this.ace.editor.session
-                    .getAnnotations()
-                    // it's nice to ignore warnings in general
-                    // but if we'd want to, we could ignore messages on row/col index -1
-                    // because they are just general warnings, and sometimes errors
-                    .filter(
-                        a =>
-                            // a.column === -1 &&
-                            // a.row === -1 &&
-                            a.type !== 'warning'
-                    ).length > 0
-
-            if (!this.codeHasErrors) {
-                if (this.lastCommittedCode === null) {
-                    this.onCommit()
-                } else {
-                    let code = this.ace.editor.session.getValue()
-
-                    this.uncommittedCodeExists = this.lastCommittedCode !== code
-
-                    this.backupCode(code)
-                }
-            }
+            this.onEditorTextChange()
         })
 
         // this.ace.editor.session.on('changeAnnotation', function(a, b) {
@@ -426,6 +464,7 @@ export default {
         // }
     },
     data: () => ({
+        commitAutomatically: false,
         lastCommittedCode: null,
         uncommittedCodeExists: false,
         commitMessage: '',
@@ -481,6 +520,11 @@ export default {
     flex-direction: column;
     align-content: flex-end;
     margin: 4px 0;
+}
+
+.commit-dropdown-controls {
+    display: flex;
+    flex-direction: row;
 }
 
 .schema-code-help {

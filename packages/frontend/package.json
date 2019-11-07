@@ -5,6 +5,7 @@
     "scripts": {
         "serve": "webpack-dev-server --mode development src/main.js",
         "build": "webpack-cli --mode production src/main.js",
+        "build-watch": "webpack-cli --mode development src/main.js --watch",
         "test": "jest"
     },
     "devDependencies": {
