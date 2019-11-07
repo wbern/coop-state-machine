@@ -8,7 +8,14 @@ import io from 'socket.io-client'
 import { BehaviorSubject } from 'rxjs'
 
 export const socketService = new (function() {
-    this.socket = io.connect('http://localhost:80')
+    this.socket = io.connect(
+        window.WEBSOCKET_PORT
+            ? window.location.origin.replace(
+                  /:[0-9]+|$/,
+                  ':' + window.WEBSOCKET_PORT
+              )
+            : window.location.origin
+    )
 
     this.connectedChange = new BehaviorSubject(false)
 
