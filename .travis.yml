@@ -18,6 +18,7 @@ script:
   - node common/scripts/install-run-rush.js rebuild --verbose
   - echo -en 'travis_fold:end:build\\r'
 deploy:
+  skip_cleanup: true
   provider: heroku
   api_key:
     secure: TLJq1o6Tvqh6BsOIDU7fBOQbUvd+eWRk52URwPLwon403zFKfiHV2qKF741e0SF+gyxzbewIfezwC5chBef857LNQs8yFa3kZMmy9U4pQotydULmWZIRXsk9QKmsrtx8g9QVX8S1SDzIADnXtO1UmUVOzz2QQlG5NJBq6yhemVR8fQffOcIPoZoTOY/QNiis+9qQNd5+UutHhaQgQxUYIkwOgeVnkPVG17CwdRQ/EVCEnbW/vL1uIfmlfagIHD3vdELTZKGQREr+YzsOn+ey6ZYFESKYs+jaL2150s5tuYQiA8hSD8JqWZsWw0hXgj2HDK+FVsE01IiUHJqQWBEEPvQ+bbpK+Cc+qXucmaRSXxmIQgljwXhyh8LHlVpPto8cGuQN3v5i1U1vfD8Oam3CoWxJGA/q00xyBdubra7ssCJz8CjLMBb4qdPszT8na2Jfgk/rh2ONbJHlzgVkruImxo1l0KRy+8F5nYyUBzd0JBiVdakCqRkYl+jPtEOPGt3SCTZSGzkb4snHn7gqvBkP/+61K212x6X9k001U1/9F0N86cVdRFQd7dLGLEonsP2ICrQ3P6cvVm/cSlZtQiwJtsZYrUKiy7lis/VkY7M0eGXgc9iyYlVdK5D0TXVoScAuE+zZw0aZFDUUrZoTroILICTpwO1eZUSJv8Pv0rs969w=
