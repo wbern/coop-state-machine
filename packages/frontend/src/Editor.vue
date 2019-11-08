@@ -82,10 +82,10 @@
                 <div class="my-custom-dropdown" slot="dropdown">
                     <ui-textbox
                         :autofocus="true"
-                        :multiLine="true"
+                        :multiLine="false"
                         :maxlength="50"
                         :enforceMaxlength="true"
-                        label="Commit message"
+                        label="Optional commit message"
                         :disabled="commitAutomatically"
                         type="text"
                         v-model="commitMessage"
@@ -98,9 +98,7 @@
                             type="primary"
                             color="primary"
                             :disabled="
-                                !uncommittedCodeExists ||
-                                    !commitMessage ||
-                                    commitAutomatically
+                                !uncommittedCodeExists || commitAutomatically
                             "
                             :icon-position="'left'"
                             :size="'normal'"
@@ -272,9 +270,9 @@ export default {
             }
         },
         onAutomaticCommitChange() {
-            if(this.commitAutomatically && this.uncommittedCodeExists) {
+            if (this.commitAutomatically && this.uncommittedCodeExists) {
                 // hacky, trigger editor change and take it from there
-                this.onEditorTextChange();
+                this.onEditorTextChange()
             }
         },
         onSyncRoomCodes() {
