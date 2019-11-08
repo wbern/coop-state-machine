@@ -232,12 +232,6 @@ export default {
         UiButton,
         UiCheckbox,
     },
-    props: {
-        defaultText: {
-            type: String,
-            default: () => startingUserCode,
-        },
-    },
     methods: {
         onEditorTextChange() {
             this.codeHasErrors =
@@ -289,7 +283,7 @@ export default {
             this.$refs['localStorageCode'].close()
         },
         backupCode(code, customMessage = '') {
-            if (startingUserCode === code) {
+            if (this.startingUserCode === code) {
                 // no need to backup the sample code
                 return
             }
@@ -357,7 +351,7 @@ export default {
     mounted() {
         this.ace.editor = ace.edit(this.$refs.editor)
 
-        this.ace.editor.session.setValue(this.formatText(this.defaultText))
+        this.ace.editor.session.setValue(this.formatText(this.startingUserCode))
 
         this.ace.editor.commands.addCommand({
             name: 'showKeyboardShortcuts',
@@ -461,24 +455,27 @@ export default {
         //     })
         // }
     },
-    data: () => ({
-        commitAutomatically: false,
-        lastCommittedCode: null,
-        uncommittedCodeExists: false,
-        commitMessage: '',
-        text: '',
-        selectedLocalStorageItemToShow: '',
-        localStorageCodes: JSON.parse(
-            window.localStorage.getItem('code') || '[]'
-        ),
-        loadedLocalStorageCode: '',
-        hasEmittedChange: false,
-        ace: {
-            editor: null,
-        },
-        actionSnippets: {},
-        actionSchema: JSON.stringify(actionSchema, undefined, 4),
-    }),
+    data() {
+        return {
+            startingUserCode: this.formatText(startingUserCode),
+            commitAutomatically: true,
+            lastCommittedCode: null,
+            uncommittedCodeExists: false,
+            commitMessage: '',
+            text: '',
+            selectedLocalStorageItemToShow: '',
+            localStorageCodes: JSON.parse(
+                window.localStorage.getItem('code') || '[]'
+            ),
+            loadedLocalStorageCode: '',
+            hasEmittedChange: false,
+            ace: {
+                editor: null,
+            },
+            actionSnippets: {},
+            actionSchema: JSON.stringify(actionSchema, undefined, 4),
+        }
+    },
 }
 </script>
 <style scoped>

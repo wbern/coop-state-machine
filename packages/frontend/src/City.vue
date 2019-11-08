@@ -8,7 +8,7 @@
             class="grid-column"
             :data-screen-x="screenX"
         >
-            <div v-if="columnNotEmpty(screenToWorldCoords(screenX).x)">
+            <div v-if="shouldShowColumn(screenToWorldCoords(screenX).x)">
                 <div
                     v-for="(cell, screenY) in worldSize.height -
                         getLowestWorldY()"
@@ -80,11 +80,36 @@ export default {
     name: 'City',
     components: { 'building-block': BuildingBlock },
     methods: {
-        columnNotEmpty(x) {
-            return (
+        shouldShowColumn(x) {
+            let columnHasContent = !!(
                 this.readOnlyWorldCoords[x] &&
                 this.readOnlyWorldCoords[x].some(col => !!col)
             )
+
+            let contentBetweenColumn = false
+            let contentBeforeColumn = false
+            let contentAfterColumn = false
+            for (let preX = 0; preX < x; preX++) {
+                contentBeforeColumn =
+                    contentBeforeColumn ||
+                    (this.readOnlyWorldCoords[preX] &&
+                        this.readOnlyWorldCoords[preX].some(col => !!col))
+            }
+
+            for (
+                let postX = this.readOnlyWorldCoords.length;
+                postX > this.readOnlyWorldCoords.length;
+                postX--
+            ) {
+                contentAfterColumn =
+                    contentAfterColumn ||
+                    (this.readOnlyWorldCoords[postX] &&
+                        this.readOnlyWorldCoords[postX].some(col => !!col))
+            }
+
+            contentBetweenColumn = contentBeforeColumn && contentAfterColumn
+
+            return columnHasContent || contentBetweenColumn
         },
         getLowestWorldX() {
             return Math.max(
