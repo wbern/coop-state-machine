@@ -254,7 +254,7 @@ export const gameService = new (function() {
         let repeatAction =
             lastAction &&
             submittedAction.action === lastAction.action &&
-            !lastAction.completed
+            !lastAction.complete
 
         // for easier interpretation, repeats are essentially the last action plus more stuff
         let currentAction = repeatAction ? lastAction : submittedAction
@@ -275,7 +275,7 @@ export const gameService = new (function() {
                         name,
                         ...submittedAction,
                         success: true,
-                        completed: true,
+                        complete: true,
                     })
                     logService.log(
                         'player ' +
@@ -323,6 +323,7 @@ export const gameService = new (function() {
 
                         let hasBottomLevel = !!(
                             gameState.worldCoords[coords.x] &&
+                            gameState.worldCoords[coords.x][coords.y] &&
                             gameState.worldCoords[coords.x][coords.y][0]
                         )
 
@@ -573,7 +574,7 @@ export const gameService = new (function() {
                                 name,
                                 ...currentAction,
                                 success: true,
-                                completed: true,
+                                complete: true,
                                 turnsLeft: playerState.turnsLeft,
                             })
 
@@ -591,7 +592,7 @@ export const gameService = new (function() {
                                 name,
                                 ...currentAction,
                                 success: true,
-                                completed: false,
+                                complete: false,
                                 turnsLeft: playerState.turnsLeft,
                             })
 
@@ -621,7 +622,7 @@ export const gameService = new (function() {
                             name,
                             ...submittedAction,
                             success: false,
-                            completed: true,
+                            complete: true,
                         })
                     }
 
@@ -642,7 +643,7 @@ export const gameService = new (function() {
                 name,
                 ...submittedAction,
                 success: false,
-                completed: true,
+                complete: true,
             })
         }
 
