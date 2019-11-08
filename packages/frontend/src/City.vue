@@ -16,13 +16,24 @@
                     :key="screenY"
                     :data-screen-x="screenX"
                     :data-screen-y="screenY"
+                    :data-floor="
+                        validFloorSpace(screenX, screenY) ? 'yes' : 'no'
+                    "
                     :data-world-x="
-                        validFloorSpace(screenX, screenY) &&
-                            screenToWorldCoords(screenX, screenY).x
+                        validFloorSpace(screenX, screenY)
+                            ? screenToWorldCoords(screenX, screenY).x
+                            : (findStackSpaceCoords(screenX, screenY) || {}).x
                     "
                     :data-world-y="
-                        validFloorSpace(screenX, screenY) &&
-                            screenToWorldCoords(screenX, screenY).y
+                        validFloorSpace(screenX, screenY)
+                            ? screenToWorldCoords(screenX, screenY).y
+                            : (findStackSpaceCoords(screenX, screenY) || {}).y
+                    "
+                    :data-world-z="
+                        (validFloorSpace(screenX, screenY) ? '0' : 'n/a') +
+                            ' + ' +
+                            ((findStackSpaceCoords(screenX, screenY) || {}).z ||
+                                'n/a')
                     "
                 >
                     <div
@@ -138,24 +149,21 @@ export default {
                 )
             )
 
-            lowestWorldY = 0
-
-            // TODO: Uncomment
             // respects how tall something is in order to get the lowest y coordinate
             // we want to make sure to render tall buildings as well
-            // this.$store.state.worldCoords.forEach(
-            //     row =>
-            //         Array.isArray(row) &&
-            //         row.forEach(
-            //             (cell, yIndex) =>
-            //                 Array.isArray(cell) &&
-            //                 cell.forEach((floor, zIndex) => {
-            //                     if (cell && lowestWorldY > yIndex - zIndex) {
-            //                         lowestWorldY = yIndex - zIndex
-            //                     }
-            //                 })
-            //         )
-            // )
+            this.$store.state.worldCoords.forEach(
+                row =>
+                    Array.isArray(row) &&
+                    row.forEach(
+                        (cell, yIndex) =>
+                            Array.isArray(cell) &&
+                            cell.forEach((floor, zIndex) => {
+                                if (cell && lowestWorldY > yIndex - zIndex) {
+                                    lowestWorldY = yIndex - zIndex
+                                }
+                            })
+                    )
+            )
 
             if (lowestWorldY < 0) {
                 throw new Error(
@@ -201,32 +209,12 @@ export default {
             //             ? 1
             //             : 0)) /
             //     2
-            res.x = lowestWorldX + screenX / 2
+            res.x = lowestWorldX + (screenX - (screenX % 2)) / 2
 
             res.y = (screenY !== undefined ? screenY : screenX) + lowestWorldY
 
             return res
         },
-        // gridToCoords(gridX, gridY) {
-        //     if (!this.validFloorSpace(gridX, gridY)) {
-        //         throw new Error(
-        //             'cannot convert to coords with uneven grid coords'
-        //         )
-        //     }
-
-        //     let xOffset = 0
-
-        //     if (this.isOddSpace(gridX, gridY)) {
-        //         xOffset = 1
-        //     }
-
-        //     const res = {
-        //         x: (gridX - xOffset) / 2,
-        //         y: gridY,
-        //     }
-
-        //     return res
-        // },
         isEvenSpace(gridX, gridY) {
             return gridX % 2 === 0 && gridY % 2 === 0
         },
@@ -246,46 +234,28 @@ export default {
         },
         findStackSpaceCoords(startingScreenX, startingScreenY) {
             let lastOneFound
-            let yLength
 
-            let coords
+            // make sure that we are in the same column visually
+            const visuallyInSameColumn = (y1, x2) => y1 % 2 === x2 % 2
 
             for (
-                // let i = startingScreenY + 1 + ((startingScreenY + 1) % 2);
-                let i = startingScreenY + 1;
-                i < yLength || yLength === undefined;
-                i++
+                let currentY = startingScreenY + 1;
+                currentY < this.$store.state.worldSettings.maxSizeY;
+                currentY++
             ) {
-                if (!coords && this.validFloorSpace(startingScreenX, i)) {
-                    coords = this.screenToWorldCoords(startingScreenX, i)
-                }
-
-                if (coords) {
-                    if (yLength === undefined) {
-                        yLength =
-                            (this.$store.state.worldCoords[coords.x] &&
-                                this.$store.state.worldCoords[coords.x]
-                                    .length) ||
-                            0
-                    }
-
+                if (
+                    this.validFloorSpace(startingScreenX, currentY) &&
+                    visuallyInSameColumn(currentY, startingScreenX)
+                ) {
                     let searchCoords = {
-                        x: coords.x,
-                        y: coords.y,
-                        z: i - startingScreenY,
+                        ...this.screenToWorldCoords(startingScreenX, currentY),
+                        z: currentY - startingScreenY,
                     }
-                    let res = this.getWorldCoords(searchCoords)
 
-                    if (
-                        // * are there any floors this many rows to the right?
-                        // * is floor in use?
-                        // * does the floor have high enough elevation?
-                        res
-                    ) {
+                    let res = this.getWorldCoords(searchCoords)
+                    if (res) {
                         lastOneFound = res
                     }
-
-                    coords.y++
                 }
             }
 
