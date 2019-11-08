@@ -27,7 +27,7 @@ var getHelpersObject = (gameState, playerState, lastAction) =>
             // because why would you ever want to sit next to someone?
             return this.getClosestOpenSpace(2)
         }
-        this.getClosestOpenSpace = function(space = 1) {
+        this.getClosestOpenSpace = function(space = 0) {
             let closestDistance = null
             let closestOpenPoint = null
 
