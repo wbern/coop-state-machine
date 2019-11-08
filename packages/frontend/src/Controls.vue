@@ -14,6 +14,10 @@
                 icon="restore"
             ></ui-icon-button>
             <ui-modal ref="rewindModal" title="Rewind back to turn..">
+                <p>
+                    Recommended to rewind to turn 0. All other functionality is
+                    highly unstable!
+                </p>
                 <ui-textbox
                     label="Turn #"
                     :autofocus="true"
@@ -47,7 +51,7 @@
                 type="primary"
                 :color="rewindOneDisabled ? 'default' : 'primary'"
                 class="city-controls__icon"
-                tooltip="Rewind one turn"
+                tooltip="(UNSTABLE) Rewind one turn"
                 icon="skip_previous"
             ></ui-icon-button>
             <ui-icon-button
