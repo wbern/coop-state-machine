@@ -2,5 +2,12 @@
     "$schema": "../json-schemas/action.schema.json",
     "action": "build",
     "speed": 50,
-    "integration": 50
+    "integration": 50,
+    "philosophies": [
+        {
+            "name": "react",
+            "speed": 10,
+            "integration": 0
+        }
+    ]
 }

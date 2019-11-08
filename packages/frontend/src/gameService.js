@@ -15,6 +15,7 @@ export const gameService = new (function() {
         initialTurns: 1,
         maxPoints: 100,
         turnsMultiplier: 0.1,
+        maxPhilosophies: 3,
     }
 
     this.generateUsefulGameState = function(state) {
@@ -243,7 +244,7 @@ export const gameService = new (function() {
         }
     }
 
-    this.processAction = function(name, actionObj, store) {
+    this.processAction = function(name, submittedAction, store) {
         this.ensurePlayerState(store, name)
 
         const gameState = store.state
@@ -252,19 +253,27 @@ export const gameService = new (function() {
 
         let repeatAction =
             lastAction &&
-            actionObj.action === lastAction.action &&
+            submittedAction.action === lastAction.action &&
             !lastAction.completed
 
+        // for easier interpretation, repeats are essentially the last action plus more stuff
+        let currentAction = repeatAction ? lastAction : submittedAction
+
+        const philosophiesAreDefined =
+            currentAction.philosophies &&
+            Array.isArray(currentAction.philosophies) &&
+            currentAction.philosophies.length > 0
+
         try {
-            switch (actionObj.action) {
+            switch (submittedAction.action) {
                 case 'move':
                     store.commit('setPlayerPosition', {
                         name,
-                        coords: actionObj.coords,
+                        coords: submittedAction.coords,
                     })
                     store.commit('recordPlayerAction', {
                         name,
-                        ...actionObj,
+                        ...submittedAction,
                         success: true,
                         completed: true,
                     })
@@ -272,42 +281,125 @@ export const gameService = new (function() {
                         'player ' +
                             name +
                             ' moved to ' +
-                            JSON.stringify(actionObj.coords) +
+                            JSON.stringify(submittedAction.coords) +
                             '.'
                     )
                     break
                 case 'build':
                     if (playerState.position !== undefined) {
+                        if (philosophiesAreDefined) {
+                            if (
+                                currentAction.philosophies.some(
+                                    p =>
+                                        p.integration < 0 ||
+                                        p.speed < 0 ||
+                                        p.integration + p.speed >
+                                            this.gameConstants.maxPoints
+                                )
+                            ) {
+                                throw new Error(
+                                    'even for a philosophy, speed and integration total cannot be over ' +
+                                        this.gameConstants.maxPoints +
+                                        ' points, and neither can be under 0. Nice try!'
+                                )
+                            }
+
+                            if (
+                                currentAction.philosophies.length >
+                                this.gameConstants.maxPhilosophies
+                            ) {
+                                throw new Error(
+                                    'cannot specify over ' +
+                                        this.gameConstants.maxPhilosophies +
+                                        ' philosophies'
+                                )
+                            }
+                        }
+
                         let coords = {
                             ...playerState.position,
                         }
                         delete coords.z
 
-                        let hasBottomLevel = !!gameState.worldCoords[coords.x][
-                            coords.y
-                        ][0]
+                        let hasBottomLevel = !!(
+                            gameState.worldCoords[coords.x] &&
+                            gameState.worldCoords[coords.x][coords.y][0]
+                        )
 
-                        let buildingHeight = gameState.worldCoords[coords.x][
-                            coords.y
-                        ].filter(b => b).length
+                        let buildingHeight = hasBottomLevel
+                            ? gameState.worldCoords[coords.x][coords.y].filter(
+                                  b => b
+                              ).length
+                            : 0
 
                         let nextAvailableZLevel = hasBottomLevel
                             ? buildingHeight
                             : 0
 
-                        let getIntegrationValueOfBuilding = building => {
-                            let integrationValueOfBuilding = 0
+                        let getBonusValuesOfBuilding = building => {
+                            let integration = 0
+                            let speed = 0
 
                             if (building) {
                                 building.forEach(block => {
                                     if (block) {
-                                        integrationValueOfBuilding +
-                                            block.integration || 0
+                                        integration + block.integration || 0
+
+                                        // also account for philosophy
+                                        if (philosophiesAreDefined) {
+                                            currentAction.philosophies.forEach(
+                                                philosophy => {
+                                                    if (
+                                                        block.philosophies &&
+                                                        Array.isArray(
+                                                            currentAction.philosophies
+                                                        ) &&
+                                                        block.philosophies
+                                                            .length > 0
+                                                    ) {
+                                                        // block has philosophies, let's compare
+                                                        let blockHasMatchingPhilosophy = block.philosophies.some(
+                                                            p =>
+                                                                p &&
+                                                                philosophy.name ===
+                                                                    p.name
+                                                        )
+
+                                                        if (
+                                                            blockHasMatchingPhilosophy
+                                                        ) {
+                                                            // a good thing, utilize the extra points
+                                                            integration += Math.max(
+                                                                0,
+                                                                philosophy.integration
+                                                            )
+                                                            speed += Math.max(
+                                                                0,
+                                                                philosophy.speed
+                                                            )
+                                                        } else {
+                                                            // this is bad, give a negative addition instead
+                                                            integration -= Math.max(
+                                                                0,
+                                                                philosophy.integration
+                                                            )
+                                                            speed -= Math.max(
+                                                                0,
+                                                                philosophy.speed
+                                                            )
+                                                        }
+                                                    }
+                                                }
+                                            )
+                                        }
                                     }
                                 })
                             }
 
-                            return integrationValueOfBuilding
+                            return {
+                                speed,
+                                integration,
+                            }
                         }
 
                         let getBuildingHeight = building => {
@@ -320,8 +412,9 @@ export const gameService = new (function() {
                             return height
                         }
 
-                        let integrationValueWithinRegion = 0
-                        let buildingBlocksWithinRegion = 0
+                        // bonus values are based on the philosophies
+                        let bonusValuesInRegion = { integration: 0, speed: 0 }
+                        let buildingBlocksInRegion = 0
 
                         for (let x = coords.x - 1; x < coords.x + 1; x++) {
                             if (x > 0) {
@@ -335,11 +428,21 @@ export const gameService = new (function() {
                                             gameState.worldCoords[x] &&
                                             gameState.worldCoords[x][y]
                                         ) {
-                                            buildingBlocksWithinRegion += getBuildingHeight(
+                                            buildingBlocksInRegion += getBuildingHeight(
                                                 gameState.worldCoords[x][y]
                                             )
-                                            integrationValueWithinRegion += getIntegrationValueOfBuilding(
+                                            let bonusValues = getBonusValuesOfBuilding(
                                                 gameState.worldCoords[x][y]
+                                            )
+
+                                            Object.keys(bonusValues).forEach(
+                                                key => {
+                                                    bonusValuesInRegion[key] =
+                                                        (bonusValuesInRegion[
+                                                            key
+                                                        ] || 0) +
+                                                        (bonusValues[key] || 0)
+                                                }
                                             )
                                         }
                                     }
@@ -354,39 +457,39 @@ export const gameService = new (function() {
 
                             // validate points allocation
                             if (
-                                typeof actionObj.speed !== 'number' &&
-                                typeof actionObj.integration === 'number'
+                                typeof submittedAction.speed !== 'number' &&
+                                typeof submittedAction.integration === 'number'
                             ) {
-                                actionObj.speed =
+                                submittedAction.speed =
                                     this.gameConstants.maxPoints -
-                                    Math.max(0, actionObj.integration)
+                                    Math.max(0, submittedAction.integration)
                                 logService.log(
                                     'player ' +
                                         name +
                                         ' did not supply speed value, setting to ' +
-                                        actionObj.speed +
+                                        submittedAction.speed +
                                         '..'
                                 )
                             } else if (
-                                typeof actionObj.speed === 'number' &&
-                                typeof actionObj.integration !== 'number'
+                                typeof submittedAction.speed === 'number' &&
+                                typeof submittedAction.integration !== 'number'
                             ) {
-                                actionObj.integration =
+                                submittedAction.integration =
                                     this.gameConstants.maxPoints -
-                                    Math.max(0, actionObj.speed)
+                                    Math.max(0, submittedAction.speed)
                                 logService.log(
                                     'player ' +
                                         name +
                                         ' did not supply integration value, setting to ' +
-                                        actionObj.integration +
+                                        submittedAction.integration +
                                         '..'
                                 )
                             } else if (
-                                typeof actionObj.speed !== 'number' ||
-                                typeof actionObj.integration !== 'number'
+                                typeof submittedAction.speed !== 'number' ||
+                                typeof submittedAction.integration !== 'number'
                             ) {
-                                actionObj.speed = 50
-                                actionObj.integration = 50
+                                submittedAction.speed = 50
+                                submittedAction.integration = 50
                                 logService.log(
                                     'player ' +
                                         name +
@@ -395,9 +498,10 @@ export const gameService = new (function() {
                             }
 
                             if (
-                                actionObj.speed < 0 ||
-                                actionObj.integration < 0 ||
-                                actionObj.speed + actionObj.integration >
+                                submittedAction.speed < 0 ||
+                                submittedAction.integration < 0 ||
+                                submittedAction.speed +
+                                    submittedAction.integration >
                                     this.gameConstants.maxPoints
                             ) {
                                 throw new Error(
@@ -408,13 +512,14 @@ export const gameService = new (function() {
                             }
 
                             let initialTurnsLeft =
-                                // initial cost minus speed
+                                // initial cost minus speed, which philosophies might alleviate (or worsen)
                                 (this.gameConstants.maxPoints -
-                                    actionObj.speed +
-                                    // add the tech debt from previous lack of speed
-                                    buildingBlocksWithinRegion *
+                                    submittedAction.speed -
+                                    bonusValuesInRegion.speed +
+                                    // add the tech debt from previous lack of speed, which philosophies might alleviate (or worsen)
+                                    buildingBlocksInRegion *
                                         this.gameConstants.maxPoints -
-                                    integrationValueWithinRegion) *
+                                    bonusValuesInRegion.integration) *
                                 // speed up the process a tad
                                 this.gameConstants.turnsMultiplier
 
@@ -459,13 +564,14 @@ export const gameService = new (function() {
                                 coords: { ...coords, z: nextAvailableZLevel },
                                 data: {
                                     type: 'buildings/buildingTiles_000.png',
-                                    integration: actionObj.integration || 0,
+                                    integration: currentAction.integration || 0,
+                                    philosophies: currentAction.philosophies,
                                 },
                             })
 
                             store.commit('recordPlayerAction', {
                                 name,
-                                ...actionObj,
+                                ...currentAction,
                                 success: true,
                                 completed: true,
                                 turnsLeft: playerState.turnsLeft,
@@ -483,7 +589,7 @@ export const gameService = new (function() {
                         } else {
                             store.commit('recordPlayerAction', {
                                 name,
-                                ...actionObj,
+                                ...currentAction,
                                 success: true,
                                 completed: false,
                                 turnsLeft: playerState.turnsLeft,
@@ -513,7 +619,7 @@ export const gameService = new (function() {
 
                         store.commit('recordPlayerAction', {
                             name,
-                            ...actionObj,
+                            ...submittedAction,
                             success: false,
                             completed: true,
                         })
@@ -527,12 +633,14 @@ export const gameService = new (function() {
             logService.log(
                 'player ' +
                     name +
-                    ' attempted an incorrect action. See devtools for detailed json validation output.'
+                    ' attempted an incorrect action. See devtools for detailed output.'
             )
+
+            console.error(e)
 
             store.commit('recordPlayerAction', {
                 name,
-                ...actionObj,
+                ...submittedAction,
                 success: false,
                 completed: true,
             })

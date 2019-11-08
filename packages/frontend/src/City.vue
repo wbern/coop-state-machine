@@ -2,29 +2,51 @@
 <template>
     <div id="city" class="grid">
         <div
-            v-for="(undefined, screenX) in readOnlyWorldCoords.length - getLowestWorldX()"
+            v-for="(undefined, screenX) in readOnlyWorldCoords.length -
+                getLowestWorldX()"
             :key="screenX"
             class="grid-column"
             :data-screen-x="screenX"
         >
             <div
-                v-for="(cell, screenY) in (readOnlyWorldCoords[screenToWorldCoords(screenX).x] || []).length - getLowestWorldY()"
-                :data-len="(readOnlyWorldCoords[screenToWorldCoords(screenX).x] || []).length"
+                v-for="(cell, screenY) in worldSize.height - getLowestWorldY()"
+                :data-len="worldSize.height"
                 :key="screenY"
                 :data-screen-x="screenX"
                 :data-screen-y="screenY"
-                :data-world-x="validFloorSpace(screenX, screenY) && screenToWorldCoords(screenX, screenY).x"
-                :data-world-y="validFloorSpace(screenX, screenY) && screenToWorldCoords(screenX, screenY).y"
+                :data-world-x="
+                    validFloorSpace(screenX, screenY) &&
+                        screenToWorldCoords(screenX, screenY).x
+                "
+                :data-world-y="
+                    validFloorSpace(screenX, screenY) &&
+                        screenToWorldCoords(screenX, screenY).y
+                "
             >
                 <div
                     class="grid-block"
                     :class="{
-                    'grid-block--valid-floor-space': validFloorSpace(screenX, screenY),
-                    'grid-block--valid-stack-space': true,
-                    'grid-block--floor-space-in-use': validFloorSpace(screenX, screenY) && floorSpaceInUse(screenToWorldCoords(screenX, screenY)),
-                    'grid-block--stack-space-in-use': stackSpaceInUse(screenX, screenY),
-                    'grid-block--stack-and-floor-space-in-use': validFloorSpace(screenX, screenY) && floorSpaceInUse(screenToWorldCoords(screenX, screenY)) && stackSpaceInUse(screenX, screenY)
-                }"
+                        'grid-block--valid-floor-space': validFloorSpace(
+                            screenX,
+                            screenY
+                        ),
+                        'grid-block--valid-stack-space': true,
+                        'grid-block--floor-space-in-use':
+                            validFloorSpace(screenX, screenY) &&
+                            floorSpaceInUse(
+                                screenToWorldCoords(screenX, screenY)
+                            ),
+                        'grid-block--stack-space-in-use': stackSpaceInUse(
+                            screenX,
+                            screenY
+                        ),
+                        'grid-block--stack-and-floor-space-in-use':
+                            validFloorSpace(screenX, screenY) &&
+                            floorSpaceInUse(
+                                screenToWorldCoords(screenX, screenY)
+                            ) &&
+                            stackSpaceInUse(screenX, screenY),
+                    }"
                 >
                     <!-- <span style="font-size: 8px;">Hello</span> -->
                     <building-block
@@ -35,7 +57,11 @@
                     <building-block
                         v-if="validFloorSpace(screenX, screenY)"
                         type="floor"
-                        :source="getWorldCoords(screenToWorldCoords(screenX, screenY))"
+                        :source="
+                            getWorldCoords(
+                                screenToWorldCoords(screenX, screenY)
+                            )
+                        "
                         :showImages="showImages"
                     />
                 </div>
@@ -52,8 +78,11 @@ export default {
     components: { 'building-block': BuildingBlock },
     methods: {
         getLowestWorldX() {
-            return this.$store.state.worldCoords.findIndex(
-                (val, index, arr) => index in arr
+            return Math.max(
+                0,
+                this.$store.state.worldCoords.findIndex(
+                    (val, index, arr) => index in arr
+                )
             )
 
             if (isNaN(lowestWorldX)) {
@@ -68,9 +97,12 @@ export default {
             bla = 0
         ) {
             // gets a starting value
-            let lowestWorldY = this.$store.state.worldCoords[
-                lowestWorldX
-            ].findIndex((val, index, arr) => index in arr)
+            let lowestWorldY = Math.max(
+                0,
+                (this.$store.state.worldCoords[lowestWorldX] || []).findIndex(
+                    (val, index, arr) => index in arr
+                )
+            )
 
             // respects how tall something is in order to get the lowest y coordinate
             // we want to make sure to render tall buildings as well
@@ -193,7 +225,11 @@ export default {
 
                 if (coords) {
                     if (yLength === undefined) {
-                        yLength = this.$store.state.worldCoords[coords.x].length
+                        yLength =
+                            (this.$store.state.worldCoords[coords.x] &&
+                                this.$store.state.worldCoords[coords.x]
+                                    .length) ||
+                            0
                     }
 
                     let searchCoords = {
@@ -253,23 +289,35 @@ export default {
     },
     created() {
         // this.init()
+        window.City = this
     },
     data() {
         return {}
     },
     computed: {
         readOnlyWorldCoords() {
-            return this.$store.state.worldCoords;
-        }
+            return this.$store.state.worldCoords
+        },
+        worldSize() {
+            let width = this.readOnlyWorldCoords.length
+            let height = 0
+            this.readOnlyWorldCoords.forEach(c => {
+                if (c && height < c.length) {
+                    height = c.length
+                }
+            })
+
+            return { height, width }
+        },
     },
     props: {
         initialSizeX: {
             type: Number,
-            default: () => 6,
+            default: () => 0,
         },
         initialSizeY: {
             type: Number,
-            default: () => 3,
+            default: () => 0,
         },
         maxSizeX: {
             type: Number,

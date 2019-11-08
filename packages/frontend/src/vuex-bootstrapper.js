@@ -10,10 +10,12 @@ const setup = _Vue => {
     _Vue.use(VuexUndoRedo /*, { ignoreMutations: ['toggleGrid'] }*/)
 }
 
+let latestWorldCreationOptions
+
 const createWorldCoords = options => {
     const defaults = {
-        initialSizeX: 6,
-        initialSizeY: 3,
+        initialSizeX: 0,
+        initialSizeY: 0,
         maxSizeX: 12,
         maxSizeY: 12,
         initialFloors: 0,
@@ -21,6 +23,8 @@ const createWorldCoords = options => {
     }
 
     let o = { ...defaults, ...options }
+
+    latestWorldCreationOptions = o
 
     let created = new Array(o.maxSizeX + o.initialSizeX)
         .fill(1, o.maxSizeX, o.maxSizeX + o.initialSizeX)
@@ -86,6 +90,7 @@ const createWorldCoords = options => {
 
 export const getDefaultState = () => ({
     worldCoords: createWorldCoords(),
+    worldSettings: { ...latestWorldCreationOptions },
     playerStates: {},
     currentTurn: 0,
 })
@@ -102,6 +107,7 @@ export const createStore = _Vue => {
             },
             resetWorldCoords(state, payload) {
                 state.worldCoords = createWorldCoords(payload)
+                state.worldSettings = { ...latestWorldCreationOptions }
             },
             setWorldCoords(state, payload) {
                 let wc = this.state.worldCoords

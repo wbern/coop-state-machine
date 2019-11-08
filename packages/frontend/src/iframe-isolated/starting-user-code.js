@@ -5,7 +5,7 @@ function main(helpers, gameState, playerState, lastAction) {
     if (gameState.currentTurn === 1) {
         return {
             action: 'move',
-            coords: helpers.getTallestBuilding()
+            coords: helpers.getClosestOpenSpace(),
         }
     }
 
@@ -13,6 +13,13 @@ function main(helpers, gameState, playerState, lastAction) {
         action: 'build',
         speed: 100,
         integration: 0,
+        philosophies: [
+            {
+                name: 'react',
+                speed: 100,
+                integration: 0,
+            },
+        ],
     }
 
     // When you're done, try the play controls under the game view
