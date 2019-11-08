@@ -8,18 +8,18 @@ function main(helpers, gameState, playerState, lastAction) {
     ) {
         return {
             action: 'move',
-            coords: helpers.getClosestOpenSpace()
+            coords: helpers.getLowestBuilding()
         }
     }
 
     return {
         action: 'build',
-        speed: 100,
+        speed: 10,
         integration: 0,
         philosophies: [
             {
                 name: 'react',
-                speed: 100,
+                speed: 10,
                 integration: 0
             }
         ]

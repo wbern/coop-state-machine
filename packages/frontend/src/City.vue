@@ -3,7 +3,8 @@
     <div id="city" class="grid">
         <div
             v-for="(undefined, screenX) in readOnlyWorldCoords.length -
-                getLowestWorldX()"
+                getLowestWorldX() +
+                1"
             :key="screenX"
             class="grid-column"
             :data-screen-x="screenX"
@@ -11,7 +12,8 @@
             <div v-if="shouldShowColumn(screenToWorldCoords(screenX).x)">
                 <div
                     v-for="(cell, screenY) in worldSize.height -
-                        getLowestWorldY()"
+                        getLowestWorldY() +
+                        1"
                     :data-len="worldSize.height"
                     :key="screenY"
                     :data-screen-x="screenX"

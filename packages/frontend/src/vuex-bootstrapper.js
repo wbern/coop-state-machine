@@ -16,8 +16,8 @@ const createWorldCoords = options => {
     const defaults = {
         initialSizeX: 0,
         initialSizeY: 0,
-        maxSizeX: 6,
-        maxSizeY: 6,
+        maxSizeX: 8,
+        maxSizeY: 8,
         initialFloors: 0,
         randomizeBuildings: false,
     }

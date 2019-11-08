@@ -13,8 +13,8 @@ export const gameService = new (function() {
 
     this.gameConstants = {
         initialTurns: 1,
-        maxPoints: 100,
-        turnsMultiplier: 0.1,
+        maxPoints: 10,
+        turnsMultiplier: 1,
         maxPhilosophies: 3,
     }
 

@@ -23,6 +23,63 @@ var getHelpersObject = (gameState, playerState, lastAction) =>
 
             return coords
         }
+        this.getLowestBuilding = function() {
+            let lowestNumber = 0
+            let coords = null
+
+            let position = this._getPlayerPositionOrCenterOfWorld()
+            let worldSize = this.getSizeOfWorld()
+
+            for (let x = 0; x < worldSize.width; x++) {
+                for (let y = 0; y < worldSize.height; y++) {
+                    if (
+                        !gameState.worldCoords[x] ||
+                        !gameState.worldCoords[x][y]
+                    ) {
+                        // a building is non-existant, put it as lowest
+                        lowestNumber = 0
+                        coords = { x, y }
+                    } else {
+                        // building exists, how low is it?
+                        if (lowestNumber > gameState.worldCoords[x][y].length) {
+                            lowestNumber = gameState.worldCoords[x][y].length
+                            coords = { x, y }
+                        }
+                    }
+                    // let distance = Math.hypot(
+                    //     position.x - x,
+                    //     position.y - y
+                    // )
+
+                    // if (
+                    //     closestDistance === null ||
+                    //     closestDistance > distance
+                    // ) {
+                    //     closestDistance = distance
+                    //     closestOpenPoint = { x, y }
+                    // }
+                }
+            }
+
+            // gameState.worldCoords.forEach((col, x) => {
+            //     if (col) {
+            //         col.forEach((row, y) => {
+            //             if (
+            //                 row &&
+            //                 (row.length < tallestNumber || coords === null)
+            //             ) {
+            //                 tallestNumber = row.length
+            //                 coords = {
+            //                     x,
+            //                     y,
+            //                 }
+            //             }
+            //         })
+            //     }
+            // })
+
+            return coords
+        }
         this.getClosestSwedishOpenSpace = function() {
             // because why would you ever want to sit next to someone?
             return this.getClosestOpenSpace(2)
@@ -64,9 +121,7 @@ var getHelpersObject = (gameState, playerState, lastAction) =>
             return closestOpenPoint
         }
         this._getPlayerPositionOrCenterOfWorld = function() {
-            let playerHasPosition =
-                playerState &&
-                playerState.position
+            let playerHasPosition = playerState && playerState.position
 
             let position = {}
             if (playerHasPosition) {
