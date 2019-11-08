@@ -8,62 +8,65 @@
             class="grid-column"
             :data-screen-x="screenX"
         >
-            <div
-                v-for="(cell, screenY) in worldSize.height - getLowestWorldY()"
-                :data-len="worldSize.height"
-                :key="screenY"
-                :data-screen-x="screenX"
-                :data-screen-y="screenY"
-                :data-world-x="
-                    validFloorSpace(screenX, screenY) &&
-                        screenToWorldCoords(screenX, screenY).x
-                "
-                :data-world-y="
-                    validFloorSpace(screenX, screenY) &&
-                        screenToWorldCoords(screenX, screenY).y
-                "
-            >
+            <div v-if="columnNotEmpty(screenToWorldCoords(screenX).x)">
                 <div
-                    class="grid-block"
-                    :class="{
-                        'grid-block--valid-floor-space': validFloorSpace(
-                            screenX,
-                            screenY
-                        ),
-                        'grid-block--valid-stack-space': true,
-                        'grid-block--floor-space-in-use':
-                            validFloorSpace(screenX, screenY) &&
-                            floorSpaceInUse(
-                                screenToWorldCoords(screenX, screenY)
-                            ),
-                        'grid-block--stack-space-in-use': stackSpaceInUse(
-                            screenX,
-                            screenY
-                        ),
-                        'grid-block--stack-and-floor-space-in-use':
-                            validFloorSpace(screenX, screenY) &&
-                            floorSpaceInUse(
-                                screenToWorldCoords(screenX, screenY)
-                            ) &&
-                            stackSpaceInUse(screenX, screenY),
-                    }"
+                    v-for="(cell, screenY) in worldSize.height -
+                        getLowestWorldY()"
+                    :data-len="worldSize.height"
+                    :key="screenY"
+                    :data-screen-x="screenX"
+                    :data-screen-y="screenY"
+                    :data-world-x="
+                        validFloorSpace(screenX, screenY) &&
+                            screenToWorldCoords(screenX, screenY).x
+                    "
+                    :data-world-y="
+                        validFloorSpace(screenX, screenY) &&
+                            screenToWorldCoords(screenX, screenY).y
+                    "
                 >
-                    <!-- <span style="font-size: 8px;">Hello</span> -->
-                    <building-block
-                        type="stack"
-                        :source="findStackSpaceCoords(screenX, screenY)"
-                        :showImages="showImages"
-                    />
-                    <building-block
-                        v-if="validFloorSpace(screenX, screenY)"
-                        type="floor"
-                        :source="
-                            getWorldCoords(
-                                screenToWorldCoords(screenX, screenY)
-                            )
-                        "
-                        :showImages="showImages"
-                    />
+                    <div
+                        class="grid-block"
+                        :class="{
+                            'grid-block--valid-floor-space': validFloorSpace(
+                                screenX,
+                                screenY
+                            ),
+                            'grid-block--valid-stack-space': true,
+                            'grid-block--floor-space-in-use':
+                                validFloorSpace(screenX, screenY) &&
+                                floorSpaceInUse(
+                                    screenToWorldCoords(screenX, screenY)
+                                ),
+                            'grid-block--stack-space-in-use': stackSpaceInUse(
+                                screenX,
+                                screenY
+                            ),
+                            'grid-block--stack-and-floor-space-in-use':
+                                validFloorSpace(screenX, screenY) &&
+                                floorSpaceInUse(
+                                    screenToWorldCoords(screenX, screenY)
+                                ) &&
+                                stackSpaceInUse(screenX, screenY),
+                        }"
+                    >
+                        <!-- <span style="font-size: 8px;">Hello</span> -->
+                        <building-block
+                            type="stack"
+                            :source="findStackSpaceCoords(screenX, screenY)"
+                            :showImages="showImages"
+                        />
+                        <building-block
+                            v-if="validFloorSpace(screenX, screenY)"
+                            type="floor"
+                            :source="
+                                getWorldCoords(
+                                    screenToWorldCoords(screenX, screenY)
+                                )
+                            "
+                            :showImages="showImages"
+                        />
+                    </div>
                 </div>
             </div>
         </div>
@@ -77,6 +80,12 @@ export default {
     name: 'City',
     components: { 'building-block': BuildingBlock },
     methods: {
+        columnNotEmpty(x) {
+            return (
+                this.readOnlyWorldCoords[x] &&
+                this.readOnlyWorldCoords[x].some(col => !!col)
+            )
+        },
         getLowestWorldX() {
             return Math.max(
                 0,
@@ -167,7 +176,7 @@ export default {
             //             ? 1
             //             : 0)) /
             //     2
-            res.x = lowestWorldX + (screenX) / 2
+            res.x = lowestWorldX + screenX / 2
 
             res.y = (screenY !== undefined ? screenY : screenX) + lowestWorldY
 
