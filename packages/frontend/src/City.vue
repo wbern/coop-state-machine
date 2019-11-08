@@ -104,21 +104,24 @@ export default {
                 )
             )
 
+            lowestWorldY = 0
+
+            // TODO: Uncomment
             // respects how tall something is in order to get the lowest y coordinate
             // we want to make sure to render tall buildings as well
-            this.$store.state.worldCoords.forEach(
-                row =>
-                    Array.isArray(row) &&
-                    row.forEach(
-                        (cell, yIndex) =>
-                            Array.isArray(cell) &&
-                            cell.forEach((floor, zIndex) => {
-                                if (cell && lowestWorldY > yIndex - zIndex) {
-                                    lowestWorldY = yIndex - zIndex
-                                }
-                            })
-                    )
-            )
+            // this.$store.state.worldCoords.forEach(
+            //     row =>
+            //         Array.isArray(row) &&
+            //         row.forEach(
+            //             (cell, yIndex) =>
+            //                 Array.isArray(cell) &&
+            //                 cell.forEach((floor, zIndex) => {
+            //                     if (cell && lowestWorldY > yIndex - zIndex) {
+            //                         lowestWorldY = yIndex - zIndex
+            //                     }
+            //                 })
+            //         )
+            // )
 
             if (lowestWorldY < 0) {
                 throw new Error(
@@ -164,7 +167,7 @@ export default {
             //             ? 1
             //             : 0)) /
             //     2
-            res.x = lowestWorldX + (screenX - (screenX % 2)) / 2
+            res.x = lowestWorldX + (screenX) / 2
 
             res.y = (screenY !== undefined ? screenY : screenX) + lowestWorldY
 
