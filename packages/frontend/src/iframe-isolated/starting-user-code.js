@@ -2,10 +2,13 @@ function main(helpers, gameState, playerState, lastAction) {
     // Hi there! Want to get started?
     // Focus this editor, press `Ctrl + Space` and type "action" to get suggestions.
 
-    if (gameState.currentTurn === 1) {
+    if (
+        gameState.currentTurn === 1 ||
+        (lastAction.action === 'build' && lastAction.complete)
+    ) {
         return {
             action: 'move',
-            coords: helpers.getClosestOpenSpace(),
+            coords: helpers.getClosestOpenSpace()
         }
     }
 
@@ -17,9 +20,9 @@ function main(helpers, gameState, playerState, lastAction) {
             {
                 name: 'react',
                 speed: 100,
-                integration: 0,
-            },
-        ],
+                integration: 0
+            }
+        ]
     }
 
     // When you're done, try the play controls under the game view

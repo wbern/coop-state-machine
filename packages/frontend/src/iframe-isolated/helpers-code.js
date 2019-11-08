@@ -65,12 +65,12 @@ var getHelpersObject = (gameState, playerState, lastAction) =>
         }
         this._getPlayerPositionOrCenterOfWorld = function() {
             let playerHasPosition =
-                gameState.playerStates[name] &&
-                gameState.playerStates[name].position
+                playerState &&
+                playerState.position
 
             let position = {}
             if (playerHasPosition) {
-                position = gameState.playerStates[name].position
+                position = playerState.position
             } else {
                 // just start from the center
                 position.x = Math.round(gameState.worldCoords.length / 2)

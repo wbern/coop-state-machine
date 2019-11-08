@@ -328,11 +328,11 @@ export default {
         },
         maxSizeX: {
             type: Number,
-            default: () => 12,
+            default: () => 6,
         },
         maxSizeY: {
             type: Number,
-            default: () => 12,
+            default: () => 6,
         },
         initialFloors: {
             type: Number,
