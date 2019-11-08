@@ -7,22 +7,22 @@ import { fromEvent, Observable, BehaviorSubject } from 'rxjs'
 import socketService from './socketService'
 
 export const multiplayerService = new (function() {
-    const createObserver = eventName =>
+    const createObserverFromEvent = eventName =>
         fromEvent(socketService.socket, eventName)
 
-    const createBehaviorSubject = (eventName, defaultValue) => {
+    const createBehaviorSubjectFromEvent = (eventName, defaultValue) => {
         let o = new BehaviorSubject(defaultValue)
-        createObserver(eventName).subscribe(v => {
+        createObserverFromEvent(eventName).subscribe(v => {
             o.next(v)
         })
         return o
     }
 
-    this.onRoomId = createBehaviorSubject('room-id', null)
-    this.onUserId = createObserver('user-id')
-    this.onCurrentRoomId = createBehaviorSubject('current-room-id', null)
-    this.onUsersInRoom = createBehaviorSubject('users-in-room', [])
-    this.onCodeChange = createObserver('code-change')
+    this.onRoomId = createBehaviorSubjectFromEvent('room-id', null)
+    this.onUserId = createObserverFromEvent('user-id')
+    this.onCurrentRoomId = createBehaviorSubjectFromEvent('current-room-id', null)
+    this.onUsersInRoom = createBehaviorSubjectFromEvent('users-in-room', [])
+    this.onCodeChange = createObserverFromEvent('code-change')
 
     this.requestUserId = function() {
         socketService.sendRequest('user-id')
