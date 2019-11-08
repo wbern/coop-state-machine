@@ -85,8 +85,12 @@ export const runnerService = new (function() {
         return sandbox.doesSandboxExist()
     }
 
-    this.setCodes = function(sets, sanitize = true) {
-        Object.keys(sets).forEach(id => this.setCode(id, sets[id], sanitize))
+    this.setCodes = function(sets, sanitize = true, restart = true) {
+        sandbox.restartSandbox().then(() => {
+            Object.keys(sets).forEach(id =>
+                this.setCode(id, sets[id], sanitize)
+            )
+        })
     }
 
     this.setCode = function(name, workerCode, sanitize = true) {
