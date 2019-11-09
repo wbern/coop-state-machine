@@ -78,7 +78,9 @@ io.on('connection', function(socket) {
         let usersInRoom = []
 
         toUsersInRoomId(users[userId].currentRoomId, userName => {
-            usersInRoom.push(userName)
+            usersInRoom.push(
+                Object.assign({}, users[userName], { socket: undefined })
+            )
         })
 
         return usersInRoom
@@ -108,15 +110,16 @@ io.on('connection', function(socket) {
         emitCodeChange()
     })
 
-    const emitRoomChange = () =>
-        socket.emit('room-change', {
-            user: userId,
-            code: users[userId].currentRoomId,
-        })
+    // const emitRoomChange = () =>
+    //     socket.emit('room-change', {
+    //         user: userId,
+    //         code: users[userId].currentRoomId,
+    //     })
 
-    socket.on('room-change', function(roomId) {
-        users[userId].currentRoomId = roomId
-        emitRoomChange()
+    socket.on('room-change', function(data) {
+        users[userId].currentRoomId = data.roomId
+        users[userId].code = data.code || users[userId].code
+        // emitRoomChange()
         emitUsersInRoom()
     })
 })

@@ -40,8 +40,8 @@ export const multiplayerService = new (function() {
         socketService.send('code-change', code)
     }
 
-    this.sendRoomChange = function(roomId) {
-        socketService.send('room-change', roomId)
+    this.sendRoomChange = function(roomId, code) {
+        socketService.send('room-change', { roomId, code: code || '' })
     }
 
     // setup

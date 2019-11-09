@@ -30,7 +30,9 @@
                 @input="userEnableChange(userName, $event)"
                 >Enabled</ui-checkbox
             >
-            <MultiplayerEditor :code="userCodes[userName]"></MultiplayerEditor>
+            <MultiplayerEditor
+                :code="userCodesInEditorBoxes[userName]"
+            ></MultiplayerEditor>
         </ui-collapsible>
 
         <div class="alert-area">
@@ -68,36 +70,56 @@ export default {
         MultiplayerEditor,
     },
     mounted() {
+        const sendCodeToServerWhenReady = () => {
+            if (this.roomId && this.userId) {
+                this.initialCodeSent = true
+
+                multiplayerService.sendCodeChange(
+                    gameService.userCodes[this.userId]
+                )
+            }
+        }
+
         multiplayerService.onRoomId.subscribe(roomId => {
             this.roomId = roomId
             if (this.currentRoomId === null) {
                 this.currentRoomId = this.roomId
+                sendCodeToServerWhenReady()
             }
         })
         multiplayerService.onUserId.subscribe(userId => {
             this.userId = userId
+            sendCodeToServerWhenReady()
         })
         multiplayerService.onCurrentRoomId.subscribe(currentRoomId => {
             this.currentRoomId = currentRoomId
         })
-        multiplayerService.onUsersInRoom.subscribe(usersInCurrentRoom => {
-            this.usersInCurrentRoom = usersInCurrentRoom
+        multiplayerService.onUsersInRoom.subscribe(roomMembers => {
+            this.usersInCurrentRoom = roomMembers.map(item => item.userId)
+
+            roomMembers.forEach(item => {
+                if (item.code) {
+                    this.updateUserCode(item.userId, item.code)
+                }
+            })
         })
         multiplayerService.onCodeChange.subscribe(change => {
-            Vue.set(this.userCodes, change.user, change.code)
-
-            gameService.setCode(this, change.user, change.code)
+            this.updateUserCode(change.user, change.code)
         })
     },
     methods: {
-        userEnableChange(userName, e) {
+        updateUserCode(userId, code = '') {
+            Vue.set(this.userCodesInEditorBoxes, userId, code || '')
+            gameService.setCode(this, userId, code || '')
+        },
+        userEnableChange(userId, e) {
             let newList = (this.disabledUsers = this.disabledUsers.filter(
-                user => user !== userName
+                user => user !== userId
             ))
 
             if (e === false) {
                 // user is disabled, add to array
-                newList.push(userName)
+                newList.push(userId)
             }
 
             this.disabledUsers = newList
@@ -109,9 +131,10 @@ export default {
         },
     },
     data: () => ({
+        initialCodeSent: false,
         showAloneAlert: true,
         usersInCurrentRoom: [],
-        userCodes: {},
+        userCodesInEditorBoxes: {},
         disabledUsers: [],
         roomInputValue: '',
         roomId: null,

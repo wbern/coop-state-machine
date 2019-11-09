@@ -24,7 +24,7 @@ var getHelpersObject = (gameState, playerState, lastAction) =>
             return coords
         }
         this.getLowestBuilding = function() {
-            let lowestNumber = 0
+            let lowestNumber = Number.POSITIVE_INFINITY
             let coords = null
 
             let position = this._getPlayerPositionOrCenterOfWorld()
@@ -33,18 +33,21 @@ var getHelpersObject = (gameState, playerState, lastAction) =>
             for (let x = 0; x < worldSize.width; x++) {
                 for (let y = 0; y < worldSize.height; y++) {
                     if (
-                        !gameState.worldCoords[x] ||
-                        !gameState.worldCoords[x][y]
+                        (!gameState.worldCoords[x] ||
+                            !gameState.worldCoords[x][y]) &&
+                        y - 1 > 0
                     ) {
                         // a building is non-existant, put it as lowest
                         lowestNumber = 0
                         coords = { x, y }
-                    } else {
-                        // building exists, how low is it?
-                        if (lowestNumber > gameState.worldCoords[x][y].length) {
-                            lowestNumber = gameState.worldCoords[x][y].length
-                            coords = { x, y }
-                        }
+                    } else if (
+                        gameState.worldCoords[x] &&
+                        gameState.worldCoords[x][y] &&
+                        lowestNumber > gameState.worldCoords[x][y].length &&
+                        y - (gameState.worldCoords[x][y].length + 1) > 0
+                    ) {
+                        lowestNumber = gameState.worldCoords[x][y].length
+                        coords = { x, y }
                     }
                     // let distance = Math.hypot(
                     //     position.x - x,

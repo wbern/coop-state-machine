@@ -267,6 +267,11 @@ export const gameService = new (function() {
         try {
             switch (submittedAction.action) {
                 case 'move':
+                    if (
+                        !submittedAction.coords
+                    ) {
+                        throw new Error('player gave invalid coords')
+                    }
                     store.commit('setPlayerPosition', {
                         name,
                         coords: submittedAction.coords,

@@ -2,18 +2,14 @@
 <template>
     <div id="city" class="grid">
         <div
-            v-for="(undefined, screenX) in readOnlyWorldCoords.length -
-                getLowestWorldX() +
-                1"
+            v-for="(undefined, screenX) in readOnlyWorldCoords.length"
             :key="screenX"
             class="grid-column"
             :data-screen-x="screenX"
         >
             <div v-if="shouldShowColumn(screenToWorldCoords(screenX).x)">
                 <div
-                    v-for="(cell, screenY) in worldSize.height -
-                        getLowestWorldY() +
-                        1"
+                    v-for="(cell, screenY) in worldSize.height"
                     :data-len="worldSize.height"
                     :key="screenY"
                     :data-screen-x="screenX"
@@ -330,11 +326,11 @@ export default {
         },
         maxSizeX: {
             type: Number,
-            default: () => 6,
+            default: () => 4,
         },
         maxSizeY: {
             type: Number,
-            default: () => 6,
+            default: () => 4,
         },
         initialFloors: {
             type: Number,
