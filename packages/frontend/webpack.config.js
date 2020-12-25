@@ -9,6 +9,7 @@ module.exports = env => {
 
     return {
         devtool: 'source-map',
+        entry: './src/main.js',
         output: {
             filename: '[name].bundle.js',
             // publicPath: env.BASE_URL,
