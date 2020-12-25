@@ -134,11 +134,11 @@ export default {
                 icon: 'person',
                 id: 'userCode',
             },
-            {
-                title: 'Others Code',
-                icon: 'people',
-                id: 'othersCode',
-            },
+            // {
+            //     title: 'Others Code',
+            //     icon: 'people',
+            //     id: 'othersCode',
+            // },
             // {
             //     title: 'Game config',
             //     icon: 'memory',

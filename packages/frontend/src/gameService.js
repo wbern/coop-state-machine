@@ -4,6 +4,7 @@
 import { Subject, BehaviorSubject } from 'rxjs'
 
 import runnerService from './runnerService'
+import socketService from './socketService'
 import logService from './logService'
 
 export const gameService = new (function() {
@@ -73,15 +74,7 @@ export const gameService = new (function() {
     }
 
     this.setCode = function(vueInstance, id, code) {
-        const codeIsDisabled = !this.disabledUserScripts.every(
-            _id => _id !== id
-        )
-
-        if (codeIsDisabled || this.isGameStarted(vueInstance)) {
-            this.userCodesPending[id] = code
-        } else {
-            this.userCodes[id] = code
-        }
+        socketService.sendRequest('set-code', code)
     }
 
     this.syncCodesToRunner = function(vueInstance) {

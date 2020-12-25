@@ -2,6 +2,7 @@
     "name": "coop-state-machine-backend",
     "version": "0.1.0",
     "private": true,
+    "type": "module",
     "scripts": {
         "build": "",
         "start": "node index.js"
@@ -13,7 +14,8 @@
         },
         "parserOptions": {
             "parser": "babel-eslint",
-            "ecmaVersion": 6
+            "ecmaVersion": 6,
+            "sourceType": "module"
         },
         "extends": [
             "eslint:recommended"
