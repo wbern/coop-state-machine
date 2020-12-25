@@ -43,8 +43,8 @@
         "react": "^16.0.0",
         "@emotion/core": "^10.0.17",
         "react-dom": "^16.0.0",
-        "webpack": ">=2",
-        "webpack-cli": ">=2",
+        "webpack": "4.x.x",
+        "webpack-cli": "4.x.x",
         "vuex-undo-redo": "^1.1.4"
     },
     "eslintConfig": {

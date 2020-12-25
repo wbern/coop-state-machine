@@ -43,8 +43,8 @@
         "vuex": "^3.1.1",
         "vuex-undo-redo": "^1.1.4",
         "moment": "^2.24.0",
-        "webpack": ">=2",
-        "webpack-cli": ">=2",
+        "webpack": "4.x.x",
+        "webpack-cli": "4.x.x",
         "json5-loader": "^3.0.0",
         "webpack-dev-server": "^3.8.2"
     },
