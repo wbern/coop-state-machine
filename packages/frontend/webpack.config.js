@@ -18,7 +18,7 @@ module.exports = env => {
             splitChunks: {
                 cacheGroups: {
                     vendors: {
-                        test: /[\\/]node_modules[\\/]/,
+                        test: /[\\/]node_modules|common\/temp[\\/]/,
                         chunks: 'all',
                         priority: 1,
                     },
@@ -28,20 +28,28 @@ module.exports = env => {
         devServer: {
             stats: 'minimal',
             contentBase: 'public',
+            host: '0.0.0.0',
             port: 9090,
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods':
+                    'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+                'Access-Control-Allow-Headers':
+                    'X-Requested-With, content-type, Authorization',
+            },
         },
         module: {
             rules: [
                 {
                     test: /\.vue$/,
-                    exclude: /node_modules/,
+                    exclude: /node_modules|common\/temp/,
                     loader: 'vue-loader',
                 },
                 // this will apply to both plain `.js` files
                 // AND `<script>` blocks in `.vue` files
                 {
                     test: /\.js$/,
-                    exclude: /node_modules/,
+                    exclude: /node_modules|common\/temp/,
                     loader: 'babel-loader',
                 },
                 {
@@ -55,7 +63,7 @@ module.exports = env => {
                 // AND `<style>` blocks in `.vue` files
                 {
                     test: /\.css$/,
-                    use: ['vue-style-loader', 'css-loader'],
+                    use: ['style-loader', 'css-loader'],
                 },
                 {
                     test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/,
@@ -78,8 +86,8 @@ module.exports = env => {
                 template: env.BASE_URL + 'index.html',
             }),
             new webpack.DefinePlugin({
-                'window.WEBSOCKET_PORT': env.WEBSOCKET_PORT
-            })
+                'window.WEBSOCKET_PORT': env.WEBSOCKET_PORT,
+            }),
             // new webpack.EnvironmentPlugin(['BASE_URL', env.BASE_URL]),
         ],
     }

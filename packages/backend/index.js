@@ -9,10 +9,19 @@ const generateName = require('sillyname')
 
 const serveOptions = {
     setHeaders: (res, path, stat) => {
+        res.header('Access-Control-Allow-Origin', '*')
         res.header(
-            'Cache-Control',
-            'private, no-cache, no-store, must-revalidate'
+            'Access-Control-Allow-Methods',
+            'GET, POST, PUT, DELETE, PATCH, OPTIONS'
         )
+        res.header(
+            'Access-Control-Allow-Headers',
+            'X-Requested-With, content-type, Authorization'
+        ),
+            res.header(
+                'Cache-Control',
+                'private, no-cache, no-store, must-revalidate'
+            )
         res.header('Expires', '-1')
         res.header('Pragma', 'no-cache')
     },
@@ -34,9 +43,9 @@ http.listen(process.env.PORT || 8080)
 
 const users = {}
 
-io.on('connection', function(socket) {
+io.on('connection', function (socket) {
     const secret = '' + socket.id + Math.floor(Math.random() * 100000)
-    const getHash = seed =>
+    const getHash = (seed) =>
         crypto
             .createHmac('sha256', secret)
             .update(secret + seed)
@@ -54,7 +63,7 @@ io.on('connection', function(socket) {
     }
 
     const toUsersInRoomId = (_roomId, callback) => {
-        Object.keys(users).forEach(userName => {
+        Object.keys(users).forEach((userName) => {
             if (users[userName].currentRoomId === _roomId) {
                 callback(userName)
             }
@@ -63,13 +72,13 @@ io.on('connection', function(socket) {
 
     // get room id that belongs to the user
     const emitRoomId = () => socket.emit('room-id', roomId)
-    socket.on('req:room-id', function(data) {
+    socket.on('req:room-id', function (data) {
         emitRoomId()
     })
 
     // get user id
     const emitUserId = () => socket.emit('user-id', userId)
-    socket.on('req:user-id', function(data) {
+    socket.on('req:user-id', function (data) {
         emitUserId()
     })
 
@@ -77,7 +86,7 @@ io.on('connection', function(socket) {
     const getUsersInRoom = () => {
         let usersInRoom = []
 
-        toUsersInRoomId(users[userId].currentRoomId, userName => {
+        toUsersInRoomId(users[userId].currentRoomId, (userName) => {
             usersInRoom.push(
                 Object.assign({}, users[userName], { socket: undefined })
             )
@@ -86,16 +95,16 @@ io.on('connection', function(socket) {
         return usersInRoom
     }
     const emitUsersInRoom = () => {
-        toUsersInRoomId(users[userId].currentRoomId, userName => {
+        toUsersInRoomId(users[userId].currentRoomId, (userName) => {
             users[userName].socket.emit('users-in-room', getUsersInRoom())
         })
     }
-    socket.on('req:users-in-room', function() {
+    socket.on('req:users-in-room', function () {
         emitUsersInRoom()
     })
 
     const emitCodeChange = () => {
-        toUsersInRoomId(users[userId].currentRoomId, userName => {
+        toUsersInRoomId(users[userId].currentRoomId, (userName) => {
             users[userName].socket.emit('code-change', {
                 user: userId,
                 code: users[userId].code,
@@ -103,7 +112,7 @@ io.on('connection', function(socket) {
         })
     }
 
-    socket.on('code-change', function(code) {
+    socket.on('code-change', function (code) {
         users[userId].code = code
 
         // send code change to all users in that room
@@ -116,7 +125,7 @@ io.on('connection', function(socket) {
     //         code: users[userId].currentRoomId,
     //     })
 
-    socket.on('room-change', function(data) {
+    socket.on('room-change', function (data) {
         users[userId].currentRoomId = data.roomId
         users[userId].code = data.code || users[userId].code
         // emitRoomChange()

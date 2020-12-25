@@ -191,7 +191,7 @@ import {
 import moment from 'moment'
 
 import prettier from 'prettier/standalone'
-import parserBabylon from 'prettier/parser-babylon'
+import parserBabylon from 'prettier/parser-babel'
 
 import { registerSnippets, createSnippets } from './ace-snippets-extension'
 // import DiffMatchPatch from 'diff-match-patch'
